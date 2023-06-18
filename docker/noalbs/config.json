@@ -1,0 +1,90 @@
+{
+  "user": {
+    "id": null,
+    "name": "${TWITCH_USERNAME}",
+    "passwordHash": null
+  },
+  "switcher": {
+    "bitrateSwitcherEnabled": true,
+    "onlySwitchWhenStreaming": true,
+    "instantlySwitchOnRecover": true,
+    "autoSwitchNotification": true,
+    "retryAttempts": 5,
+    "triggers": {
+      "low": 800,
+      "rtt": 1000,
+      "offline": null
+    },
+    "switchingScenes": {
+      "normal": "${OBS_SCENE_NORMAL}",
+      "low": "${OBS_SCENE_LOW_BITRATE}",
+      "offline": "${OBS_SCENE_OFFLINE}"
+    },
+    "streamServers": [
+      {
+        "streamServer": {
+          "type": "SrtLiveServer",
+          "statsUrl": "http://sls:8181/stats",
+          "publisher": "publish/live/feed1"
+        },
+        "name": "SLS",
+        "priority": 0,
+        "overrideScenes": null,
+        "dependsOn": null,
+        "enabled": true
+      }
+    ]
+  },
+  "software": {
+    "type": "Obs",
+    "host": "${OBS_HOST}",
+    "password": "${OBS_PASSWORD}",
+    "port": ${OBS_PORT}
+  },
+  "chat": {
+    "platform": "Twitch",
+    "username": "${TWITCH_USERNAME}",
+    "admins": [
+      "${TWITCH_USERNAME}"
+    ],
+    "prefix": "!",
+    "enablePublicCommands": false,
+    "enableModCommands": true,
+    "enableAutoStopStreamOnHostOrRaid": false,
+    "announceRaidOnAutoStop": false,
+    "commands": {
+      "Fix": {
+        "permission": null,
+        "alias": [
+          "f"
+        ]
+      },
+      "Switch": {
+        "permission": "Mod",
+        "alias": [
+          "ss"
+        ]
+      },
+      "Bitrate": {
+        "permission": null,
+        "alias": [
+          "b"
+        ]
+      }
+    }
+  },
+  "optionalScenes": {
+    "starting": null,
+    "ending": null,
+    "privacy": "privacy",
+    "refresh": null
+  },
+  "optionalOptions": {
+    "twitchTranscodingCheck": false,
+    "twitchTranscodingRetries": 5,
+    "twitchTranscodingDelaySeconds": 15,
+    "offlineTimeout": null,
+    "recordWhileStreaming": false
+  },
+  "language": "en"
+}

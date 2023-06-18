@@ -1,0 +1,10 @@
+.chatContainer {
+  margin: 10px;
+  font-size: 24px;
+  line-height: 1.5em;
+  height: 500px;
+  overflow: auto;
+  iframe {
+    border: 0;
+  }
+}

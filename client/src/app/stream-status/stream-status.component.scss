@@ -1,0 +1,31 @@
+.streamStatusContainer {
+  display: flex;
+  justify-items: center;
+  width: 100%;
+}
+
+.streamStatus {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid black;
+  width: 50%;
+  .bitrate {
+    font-size: 32px;
+  }
+  .streamName {
+
+  }
+}
+
+.connected {
+  background-color: lightgreen;
+}
+
+.disconnected {
+  background-color: lightsalmon;
+}
+
+.badConnection {
+  background-color: yellow;
+}

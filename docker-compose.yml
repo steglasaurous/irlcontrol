@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  sls:
+    image: b3ckontwitch/sls-b3ck-edit
+    ports:
+      - "30000:30000/udp"
+      - "8181:8181/tcp"
+    restart: always
+    volumes:
+      - sls_data:/data
+      - ./docker/sls/sls.conf:/etc/sls/sls.conf
+
+  noalbs:
+    build: docker/noalbs
+    volumes:
+      - ./docker/noalbs/config.json:/config.json
+    restart: always
+    env_file:
+      - settings.env
+
+  irlcontrol:
+    build: .
+    volumes:
+      - ./docker/irlcontrol/config.json:/server/config.json
+    restart: always
+    ports:
+      - "3000:3000/tcp"
+    environment:
+      - settings.env
+
+# Uncomment this for an SLS instance suited for an audio feedback channel.  You can use this to hear your stream back
+# on your mobile device using an SRT player like Haivision Play Pro.
+#  slsaudio:
+#    image: b3ckontwitch/sls-b3ck-edit
+#    ports:
+#      - "30001:30000/udp"
+#      - "8182:8181/tcp"
+#    restart: always
+#    volumes:
+#      - sls_data_audio:/data
+#      - ./docker/sls/sls-audio.conf:/etc/sls/sls.conf
+
+# Uncomment this for an additional SLS instance if you're receiving more than one video stream.
+# Ex: I use this for a "face cam" on my bike streams.
+#  sls2:
+#    image: b3ckontwitch/sls-b3ck-edit
+#    ports:
+#      - "30002:30000/udp"
+#      - "8183:8181/tcp"
+#    restart: always
+#    volumes:
+#      - sls_data_2:/data
+#      - ./sls-2.conf:/etc/sls/sls.conf
+
+# If using a source that requires RTMP, uncomment this to build and start the RTMP server.
+#  rtmp:
+#    build: docker/rtmp
+#    restart: unless-stopped
+#    ports:
+#      - 8090:8090
+#      - 1935:1935
+
+volumes:
+  sls_data:
+  sls_data_audio:
+  sls_data_2:
