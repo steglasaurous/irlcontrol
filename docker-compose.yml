@@ -2,14 +2,14 @@ version: '3'
 
 services:
   sls:
-    image: b3ckontwitch/sls-b3ck-edit
+    build: ./docker/sls
     ports:
       - "30000:30000/udp"
       - "8181:8181/tcp"
     restart: always
     volumes:
       - sls_data:/data
-      - ./docker/sls/sls.conf:/etc/sls/sls.conf
+      - ./docker/sls/sls.conf:/sls.conf
 
   noalbs:
     build: docker/noalbs
