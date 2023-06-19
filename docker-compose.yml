@@ -22,7 +22,7 @@ services:
   irlcontrol:
     build: .
     volumes:
-      - ./docker/irlcontrol/config.json:/server/config.json
+      - ./docker/irlcontrol/config.json:/config.json
     restart: always
     ports:
       - "3000:3000/tcp"
