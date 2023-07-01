@@ -54,8 +54,8 @@ rtmp {
         listen 1935;
         chunk_size 4096;
 
-	application publish {
-	    live on;
+        application publish {
+            live on;
         }
     }
 }

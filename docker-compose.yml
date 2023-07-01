@@ -26,7 +26,7 @@ services:
     restart: always
     ports:
       - "3000:3000/tcp"
-    environment:
+    env_file:
       - settings.env
 
 # Uncomment this for an SLS instance suited for an audio feedback channel.  You can use this to hear your stream back
