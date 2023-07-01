@@ -22,7 +22,7 @@ export class ChatComponent {
   constructor(private websocketService: WebsocketService, sanitizer: DomSanitizer) {
     websocketService.config$.subscribe((config) => {
       let url = new URL(window.location.href);
-      this.twitchChatUrl = sanitizer.bypassSecurityTrustResourceUrl(`https://www.twitch.tv/embed/${config.twitchChannel}/chat?parent=${url.hostname}`);
+      this.twitchChatUrl = sanitizer.bypassSecurityTrustResourceUrl(`https://www.twitch.tv/embed/${config.twitchChannel}/chat?darkpopout&parent=${url.hostname}`);
     });
   }
 }
