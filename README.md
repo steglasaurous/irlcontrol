@@ -87,7 +87,9 @@ This can get complicated depending on how complex your stream setup is, but ther
 getting the audio coming from OBS and other tools (ex: a TTS app like Speaker.bot) back to you so you can interact with 
 your stream more easily.  Here's what I use.  
 
-### Use 
+### Use Virtual Audio Cable and Discord
+
+
 
 ## Larix Broadcaster Video Settings I Use
 

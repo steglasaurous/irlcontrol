@@ -43,15 +43,15 @@ services:
 
 # Uncomment this for an SLS instance suited for an audio feedback channel.  You can use this to hear your stream back
 # on your mobile device using an SRT player like Haivision Play Pro.
-#  slsaudio:
-#    image: b3ckontwitch/sls-b3ck-edit
-#    ports:
-#      - "30001:30000/udp"
-#      - "8182:8181/tcp"
-#    restart: always
-#    volumes:
-#      - sls_data_audio:/data
-#      - ./docker/sls/sls-audio.conf:/etc/sls/sls.conf
+  slsaudio:
+    build: ./docker/sls
+    ports:
+      - "30001:30000/udp"
+      - "8182:8181/tcp"
+    restart: always
+    volumes:
+      - sls_data_audio:/data
+      - ./docker/sls/sls-audio.conf:/sls.conf
 
 # Uncomment this for an additional SLS instance if you're receiving more than one video stream.
 # Ex: I use this for a "face cam" on my bike streams.
