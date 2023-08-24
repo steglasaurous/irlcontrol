@@ -9,6 +9,7 @@ export interface StreamSource {
     type: StreamSourceType;
     name: string;
     url: string;
+    key: string;
 }
 
 export interface TwitchConfig {

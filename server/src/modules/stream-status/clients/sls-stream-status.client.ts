@@ -19,6 +19,7 @@ export class SlsStreamStatusClient extends AbstractStreamStatusClient {
         private httpService: HttpService,
         private statusUrl: string,
         private streamName: string,
+        private key: string,
     ) {
         super();
     }
@@ -32,14 +33,13 @@ export class SlsStreamStatusClient extends AbstractStreamStatusClient {
             this.httpService.get(this.statusUrl).subscribe({
                 next: (response) => {
                     const obj = response.data;
-                    // FIXME: Hard-coded publish feed, should make this configurable.
-                    if (obj.publishers['publish/live/feed1'] != undefined) {
+                    if (obj.publishers[this.key] != undefined) {
                         this.latestStreamStatus = new StreamStatus(
                             this.streamName,
-                            obj.publishers['publish/live/feed1'].bitrate ?? 0,
+                            obj.publishers[this.key].bitrate ?? 0,
                             obj.status == 'ok',
                             Date.now(),
-                            obj.publishers['publish/live/feed1'].rtt ?? -1,
+                            obj.publishers[this.key].rtt ?? -1,
                         );
                     } else {
                         this.latestStreamStatus = new StreamStatus(

@@ -28,6 +28,7 @@ import { RtmpStreamStatusClient } from './clients/rtmp-stream-status.client';
                                         httpService,
                                         streamSource.url,
                                         streamSource.name,
+                                        streamSource.key,
                                     ),
                                 );
                                 break;

@@ -3,7 +3,14 @@
     {
       "type": "sls",
       "name": "Main",
-      "url": "http://sls:8181/stats"
+      "url": "http://sls:8181/stats",
+      "key": "publish/live/feed1"
+    },
+    {
+      "type": "sls",
+      "name": "Game",
+      "url": "http://sls:8181/stats",
+      "key": "publish/live/feed3"
     }
   ],
   "chat": {
