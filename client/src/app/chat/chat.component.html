@@ -1,6 +1,5 @@
-<div class="chatContainer">
-  <iframe [src]="twitchChatUrl"
-                  height="95%"
-                  width="99%">
-  </iframe>
+<div class="chatContainer" #chatContainer>
+  <div class="chatMessage" *ngFor="let chatMessage of chatMessages">
+    <span class="username" style="color: {{ chatMessage.color }}">{{ chatMessage.username }}</span>: <span class="message" [innerHTML]="chatMessage | chatMessageEmotes"></span>
+  </div>
 </div>

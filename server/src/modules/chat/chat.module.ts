@@ -14,17 +14,17 @@ import { TwitchConfig } from '../../configuration';
             useFactory: (configService: ConfigService) => {
                 const chatManager = new ChatManagerService();
                 // Disabling twitch chat as it's not currently being used.
-                // const twitchConfig =
-                //     configService.get<TwitchConfig>('chat.twitch');
+                const twitchConfig =
+                    configService.get<TwitchConfig>('chat.twitch');
 
-                // const twitchClient = new TwitchChatClient(
-                //     twitchConfig.appClientId,
-                //     twitchConfig.appClientSecret,
-                //     twitchConfig.tokenFile,
-                //     twitchConfig.channel,
-                // );
-                //
-                // chatManager.addChatClient(twitchClient);
+                const twitchClient = new TwitchChatClient(
+                    twitchConfig.appClientId,
+                    twitchConfig.appClientSecret,
+                    twitchConfig.tokenFile,
+                    twitchConfig.channel,
+                );
+
+                chatManager.addChatClient(twitchClient);
 
                 return chatManager;
             },
