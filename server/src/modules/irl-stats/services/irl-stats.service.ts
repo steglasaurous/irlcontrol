@@ -1,109 +1,62 @@
 import { Inject, Injectable } from '@nestjs/common';
-import * as RealtimeIRL from '../../../../node_modules/@rtirl/api/lib/index';
-import { Subject } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 import { IrlStats } from './irl-stats';
+import { HttpService } from '@nestjs/axios';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class IrlStatsService {
-    private oldsessionID!: string;
-    private totalDistance = 0.0;
-    private gps = {
-        old: { latitude: 0.0, longitude: 0.0 },
-        new: { latitude: 0.0, longitude: 0.0 },
-    };
-
-    private lastSpeed = 0.0;
-
+    irlStat: IrlStats;
     irlUpdates$: Subject<IrlStats> = new Subject<IrlStats>();
 
-    constructor(@Inject('RTIRL_PULL_KEY') private rtirlPullKey: string) {}
+    private running: boolean = true; // FIXME: Change to default to false and have some sort of trigger to turn it on?
+    // Store as CSV so it's easy to append.  Don't have to worry about JSON structures, etc.
+
+    constructor(
+        @Inject('RTIRL_PULL_KEY') private rtirlPullKey: string,
+        private readonly httpService: HttpService,
+    ) {}
 
     start() {
-        // FIXME: It seems importing RealtimeIRL causes a nodejs 'module not found' error.  The lib itself seems relatively straight forward, but not sure.
-        // RealtimeIRL.forPullKey(this.rtirlPullKey).addLocationListener(
-        //     ({ latitude, longitude }) => {
-        //         this.gps.new.latitude = latitude;
-        //         this.gps.new.longitude = longitude;
-        //
-        //         if (this.oldsessionID === undefined) {
-        //             this.totalDistance = 0;
-        //         } else {
-        //             // We have new gps points. Let's calculate the delta distance using previously saved gps points.
-        //             const delta = this.distanceInKmBetweenEarthCoordinates(
-        //                 this.gps.new.latitude,
-        //                 this.gps.new.longitude,
-        //                 this.gps.old.latitude,
-        //                 this.gps.old.longitude,
-        //             );
-        //             this.totalDistance = this.totalDistance + delta;
-        //             //shifting new points to old for next update
-        //             this.gps.old.latitude = latitude;
-        //             this.gps.old.longitude = longitude;
-        //
-        //             this.irlUpdates$.next({
-        //                 totalDistance: this.totalDistance,
-        //                 speed: this.lastSpeed,
-        //             });
-        //             // Note that because of GPS drift, different gps points will keep comming even if
-        //             // the subject is stationary. Each new gps point will be considered as subject is moving
-        //             // and it will get added to the total distance. Each addition will be tiny but it will
-        //             // addup over time and can become visible. So, at the end the shown distance might look
-        //             // sligtly more than expected.
-        //         }
-        //     },
-        // );
-        //
-        // RealtimeIRL.forPullKey(this.rtirlPullKey).addSessionIdListener(
-        //     (sessionId) => {
-        //         if (sessionId != this.oldsessionID) {
-        //             this.oldsessionID = sessionId;
-        //             this.resetVars();
-        //         }
-        //     },
-        // );
-        //
-        // RealtimeIRL.forPullKey(this.rtirlPullKey).addSpeedListener((speed) => {
-        //     this.lastSpeed = speed / 1000;
-        //     this.irlUpdates$.next({
-        //         totalDistance: this.totalDistance,
-        //         speed: this.lastSpeed,
-        //     });
-        // });
+        this.running = true;
     }
 
-    degreesToRadians(degrees: number): number {
-        return (degrees * Math.PI) / 180;
+    stop() {
+        this.running = false;
     }
 
-    distanceInKmBetweenEarthCoordinates(
-        lat1: number,
-        lon1: number,
-        lat2: number,
-        lon2: number,
-    ) {
-        const earthRadiusKm = 6371;
+    @Cron(CronExpression.EVERY_5_SECONDS)
+    async getUpdate() {
+        if (this.running) {
+            console.log(`https://rtirl.com/api/pull?key=${this.rtirlPullKey}`);
+            const response = await firstValueFrom(
+                this.httpService.get(
+                    `https://rtirl.com/api/pull?key=${this.rtirlPullKey}`,
+                ),
+            );
 
-        const dLat = this.degreesToRadians(lat2 - lat1);
-        const dLon = this.degreesToRadians(lon2 - lon1);
-
-        lat1 = this.degreesToRadians(lat1);
-        lat2 = this.degreesToRadians(lat2);
-
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.sin(dLon / 2) *
-                Math.sin(dLon / 2) *
-                Math.cos(lat1) *
-                Math.cos(lat2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthRadiusKm * c;
-    }
-
-    resetVars(): void {
-        // New session. Reset total distance
-        this.totalDistance = 0;
-        // Set starting point to the current point
-        this.gps.old.latitude = this.gps.new.latitude;
-        this.gps.old.longitude = this.gps.new.longitude;
+            this.irlStat = {
+                latitude: response.data.location.latitude,
+                longitude: response.data.location.longitude,
+            };
+        }
     }
 }
+
+/*
+{
+   "accuracy":5.408999919891357,  // meters
+   "altitude":{
+      "EGM96":3.5973978207728656, // meters
+      "WGS84":-29.197977916731165 // meters
+   },
+   "heading":206.37741088867188,  // degrees
+   "location":{
+      "latitude":40.7047389,      // degrees
+      "longitude":-74.0171302     // degrees
+   },
+   "reportedAt":1629924573000,    // milliseconds since epoch
+   "speed":0.6116824746131897,    // meters per second
+   "updatedAt":1629924573283      // milliseconds since epoch
+}
+ */

@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { IrlStatsService } from './services/irl-stats.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Rtirl } from '../../configuration';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-    imports: [ConfigModule],
+    imports: [ConfigModule, HttpModule],
     providers: [
         IrlStatsService,
         {
