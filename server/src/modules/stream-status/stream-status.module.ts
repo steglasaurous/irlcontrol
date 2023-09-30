@@ -5,17 +5,20 @@ import { SlsStreamStatusClient } from './clients/sls-stream-status.client';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { StreamSource, StreamSourceType } from '../../configuration';
 import { RtmpStreamStatusClient } from './clients/rtmp-stream-status.client';
+import { IrlStatsModule } from '../irl-stats/irl-stats.module';
+import { IrlStatsService } from '../irl-stats/services/irl-stats.service';
 
 @Module({
-    imports: [HttpModule, ConfigModule],
+    imports: [HttpModule, ConfigModule, IrlStatsModule],
     providers: [
         {
             provide: StreamStatusManagerService,
             useFactory: (
                 httpService: HttpService,
                 configService: ConfigService,
+                irlStatsService: IrlStatsService,
             ) => {
-                const manager = new StreamStatusManagerService();
+                const manager = new StreamStatusManagerService(irlStatsService);
                 const streamSources =
                     configService.get<StreamSource[]>('streamSources');
 
@@ -51,7 +54,7 @@ import { RtmpStreamStatusClient } from './clients/rtmp-stream-status.client';
 
                 return manager;
             },
-            inject: [HttpService, ConfigService],
+            inject: [HttpService, ConfigService, IrlStatsService],
         },
     ],
     exports: [StreamStatusManagerService],

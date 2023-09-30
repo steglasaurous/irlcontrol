@@ -1,4 +1,4 @@
 export interface IrlStats {
-    totalDistance: number;
-    speed: number;
+    latitude: number;
+    longitude: number;
 }

@@ -32,7 +32,7 @@
     "@rtirl/api": "^1.1.5",
     "@twurple/auth": "^6.2.1",
     "@twurple/chat": "^6.2.1",
-    "axios": "^1.4.0",
+    "axios": "^1.5.1",
     "fast-xml-parser": "^4.2.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
