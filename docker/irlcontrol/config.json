@@ -5,23 +5,17 @@
       "name": "Main",
       "url": "http://sls:8181/stats",
       "key": "publish/live/feed1"
-    },
-    {
-      "type": "sls",
-      "name": "Game",
-      "url": "http://sls:8181/stats",
-      "key": "publish/live/feed3"
     }
   ],
   "chat": {
     "twitch": {
-      "appClientId": "CLIENT_ID_HERE",
-      "appClientSecret": "CLIENT_SECRET_HERE",
+      "appClientId": "${TWITCH_APP_CLIENT_ID}",
+      "appClientSecret": "${TWITCH_APP_CLIENT_SECRET}",
       "tokenFile": "twitch_token.json",
       "channel": "${TWITCH_USERNAME}"
     }
   },
   "rtirl": {
-    "pullKey": "YOUR_PULL_KEY"
+    "pullKey": "${RTIRL_PULL_KEY}"
   }
 }
