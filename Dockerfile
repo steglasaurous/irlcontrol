@@ -6,6 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update && apt-get -y upgrade && apt-get install -y gettext-base dos2unix
 COPY client /client
 COPY server /server
+COPY docker/irlcontrol/config.json /config.json
 
 # Build the backend app
 RUN cd /server && npm ci && npm run build

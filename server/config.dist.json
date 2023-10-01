@@ -1,20 +1,27 @@
 {
-  "streamSources": [
-    {
-      "type": "sls",
-      "name": "Main",
-      "url": "http://sls:8181/stats"
+    "streamSources": [
+        {
+            "type": "sls",
+            "name": "Main",
+            "url": "http://sls:8181/stats",
+            "key": "publish/live/feed1"
+        },
+        {
+            "type": "sls",
+            "name": "Face",
+            "url": "http://sls:8181/stats",
+            "key": "publish/live/feed2"
+        }
+    ],
+    "chat": {
+        "twitch": {
+            "appClientId": "${TWITCH_APP_CLIENT_ID}",
+            "appClientSecret": "${TWITCH_APP_CLIENT_SECRET}",
+            "tokenFile": "twitch_token.json",
+            "channel": "${TWITCH_USERNAME}"
+        }
+    },
+    "rtirl": {
+        "pullKey": "${RTIRL_PULL_KEY}"
     }
-  ],
-  "chat": {
-    "twitch": {
-      "appClientId": "CLIENT_ID_HERE",
-      "appClientSecret": "CLIENT_SECRET_HERE",
-      "tokenFile": "twitch_token.json",
-      "channel": "YOUR_TWITCH_CHANNEL_OR_USERNAME"
-    }
-  },
-  "rtirl": {
-    "pullKey": "YOUR_PULL_KEY"
-  }
 }
