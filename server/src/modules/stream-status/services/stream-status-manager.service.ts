@@ -59,7 +59,6 @@ export class StreamStatusManagerService {
             fs.writeFileSync(this.logFile, JSON.stringify(output) + '\n', {
                 flag: 'a',
             });
-            console.log(output);
         }
     }
 }
