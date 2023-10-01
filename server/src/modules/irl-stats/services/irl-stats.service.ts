@@ -28,7 +28,6 @@ export class IrlStatsService {
     @Cron(CronExpression.EVERY_5_SECONDS)
     async getUpdate() {
         if (this.running) {
-            console.log(`https://rtirl.com/api/pull?key=${this.rtirlPullKey}`);
             const response = await firstValueFrom(
                 this.httpService.get(
                     `https://rtirl.com/api/pull?key=${this.rtirlPullKey}`,
