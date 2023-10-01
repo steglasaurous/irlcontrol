@@ -16,42 +16,48 @@ services:
     volumes:
       - ./docker/noalbs/config.json:/config.json
     restart: always
-    env_file:
-      - settings.env
+    environment:
+      - TWITCH_BOT_USERNAME=${TWITCH_BOT_USERNAME}
+      - TWITCH_BOT_OAUTH=${TWITCH_BOT_OAUTH}
+      - OBS_HOST=${OBS_HOST}
+      - OBS_PASSWORD=${OBS_PASSWORD}
+      - OBS_PORT=${OBS_PORT}
+      - OBS_SCENE_NORMAL=${OBS_SCENE_NORMAL}
+      - OBS_SCENE_LOW_BITRATE=${OBS_SCENE_LOW_BITRATE}
+      - OBS_SCENE_OFFLINE=${OBS_SCENE_OFFLINE}
 
   irlcontrol:
     build: .
     volumes:
-      - ./docker/irlcontrol/config.json:/config.json
+      - ./server/data:/server/data
     restart: always
+    networks:
+      - default
+      - proxynet
+    environment:
+      - VIRTUAL_HOST=${SITE_VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${SITE_LETSENCRYPT_HOST}
+      - LETSENCRYPT_EMAIL=${SITE_LETSENCRYPT_EMAIL}
+      - TWITCH_USERNAME=${TWITCH_USERNAME}
+      - RTIRL_PULL_KEY=${RTIRL_PULL_KEY}
+      - TWITCH_APP_CLIENT_ID=${TWITCH_APP_CLIENT_ID}
+      - TWITCH_APP_CLIENT_SECRET=${TWITCH_APP_CLIENT_SECRET}
+
     ports:
-      - "3000:3000/tcp"
-    env_file:
-      - settings.env
+      - 3000
+
 
 # Uncomment this for an SLS instance suited for an audio feedback channel.  You can use this to hear your stream back
 # on your mobile device using an SRT player like Haivision Play Pro.
-#  slsaudio:
-#    image: b3ckontwitch/sls-b3ck-edit
-#    ports:
-#      - "30001:30000/udp"
-#      - "8182:8181/tcp"
-#    restart: always
-#    volumes:
-#      - sls_data_audio:/data
-#      - ./docker/sls/sls-audio.conf:/etc/sls/sls.conf
-
-# Uncomment this for an additional SLS instance if you're receiving more than one video stream.
-# Ex: I use this for a "face cam" on my bike streams.
-#  sls2:
-#    image: b3ckontwitch/sls-b3ck-edit
-#    ports:
-#      - "30002:30000/udp"
-#      - "8183:8181/tcp"
-#    restart: always
-#    volumes:
-#      - sls_data_2:/data
-#      - ./sls-2.conf:/etc/sls/sls.conf
+  slsaudio:
+    image: b3ckontwitch/sls-b3ck-edit
+    ports:
+      - "30001:30000/udp"
+      - "8182:8181/tcp"
+    restart: always
+    volumes:
+      - sls_data_audio:/data
+      - ./docker/sls/sls-audio.conf:/etc/sls/sls.conf
 
 # If using a source that requires RTMP, uncomment this to build and start the RTMP server.
 #  rtmp:
@@ -65,3 +71,8 @@ volumes:
   sls_data:
   sls_data_audio:
   sls_data_2:
+
+networks:
+  proxynet:
+    name: nextcloud-docker_proxy-tier
+    external: true

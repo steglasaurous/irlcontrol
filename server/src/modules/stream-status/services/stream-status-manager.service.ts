@@ -17,7 +17,8 @@ export class StreamStatusManagerService {
 
     private logger: Logger = new Logger(StreamStatusManagerService.name);
 
-    private logFile = '/server/public/stats.txt';
+    // FIXME: Future improvement: put this into config instead.  Might not change location but good to keep it together with other configs.
+    private logFile = '/server/data/location_stream_stats.txt';
 
     constructor(private irlStatsService: IrlStatsService) {}
     public addStreamStatusClient(client: AbstractStreamStatusClient) {
