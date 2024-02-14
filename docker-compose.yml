@@ -52,8 +52,8 @@ services:
   slsaudio:
     image: b3ckontwitch/sls-b3ck-edit
     ports:
-      - "30001:30000/udp"
-      - "8182:8181/tcp"
+      - "30001:30001/udp"
+      - "8182:8182/tcp"
     restart: always
     volumes:
       - sls_data_audio:/data
@@ -74,5 +74,5 @@ volumes:
 
 networks:
   proxynet:
-    name: nextcloud-docker_proxy-tier
+    name: nginx_proxy-tier
     external: true
