@@ -3,6 +3,7 @@ import * as fs from 'fs';
 export enum StreamSourceType {
     sls = 'sls',
     rtmp = 'rtmp',
+    belabox = 'belabox',
 }
 
 export interface StreamSource {
