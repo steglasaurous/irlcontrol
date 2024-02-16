@@ -7,6 +7,7 @@ import { StreamSource, StreamSourceType } from '../../configuration';
 import { RtmpStreamStatusClient } from './clients/rtmp-stream-status.client';
 import { IrlStatsModule } from '../irl-stats/irl-stats.module';
 import { IrlStatsService } from '../irl-stats/services/irl-stats.service';
+import { BelaboxStreamStatusClient } from './clients/belabox-stream-status.client';
 
 @Module({
     imports: [HttpModule, ConfigModule, IrlStatsModule],
@@ -25,6 +26,16 @@ import { IrlStatsService } from '../irl-stats/services/irl-stats.service';
                 if (streamSources && streamSources.length > 0) {
                     streamSources.forEach((streamSource: StreamSource) => {
                         switch (streamSource.type) {
+                            case StreamSourceType.belabox:
+                                manager.addStreamStatusClient(
+                                    new BelaboxStreamStatusClient(
+                                        httpService,
+                                        streamSource.url,
+                                        streamSource.name,
+                                        streamSource.key,
+                                    ),
+                                );
+                                break;
                             case StreamSourceType.sls:
                                 manager.addStreamStatusClient(
                                     new SlsStreamStatusClient(
