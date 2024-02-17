@@ -8,6 +8,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { ConfigModule } from '@nestjs/config';
 import { IrlStatsModule } from './modules/irl-stats/irl-stats.module';
 import configuration from './configuration';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import configuration from './configuration';
             load: [configuration],
         }),
         IrlStatsModule,
+        EventEmitterModule.forRoot(),
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -1,36 +1,58 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AbstractChatClient } from './clients/abstract-chat.client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ChatMessageReceiveEvent } from '../events/chat-message-receive.event';
 import { ChatMessage } from './chat-message';
-import { Subject } from 'rxjs';
 
 @Injectable()
 export class ChatManagerService {
-    private chatClients: AbstractChatClient[] = [];
-    private messages$: Subject<ChatMessage> = new Subject<ChatMessage>();
-
+    private logger: Logger = new Logger(this.constructor.name);
     private messageHistory: ChatMessage[] = [];
 
-    public getMessagesObservable(): Subject<ChatMessage> {
-        return this.messages$;
+    constructor(
+        private eventEmitter: EventEmitter2,
+        @Inject('ChatClients') private chatClients: AbstractChatClient[] = [],
+    ) {
+        chatClients.forEach((chatClient) => {
+            chatClient.messages$.subscribe((chatMessage) => {
+                this.messageHistory.push(chatMessage);
+                this.eventEmitter.emit(ChatMessageReceiveEvent.name, {
+                    chatMessage: chatMessage,
+                } as ChatMessageReceiveEvent);
+            });
+        });
+
+        this.connectAll();
     }
 
     public addChatClient(chatClient: AbstractChatClient) {
         chatClient.messages$.subscribe((chatMessage) => {
-            chatMessage.id = this.messageHistory.length;
             this.messageHistory.push(chatMessage);
-            this.messages$.next(chatMessage);
+            this.eventEmitter.emit(ChatMessageReceiveEvent.name, {
+                chatMessage: chatMessage,
+            } as ChatMessageReceiveEvent);
         });
 
         this.chatClients.push(chatClient);
     }
 
-    public connect() {
+    public async connectAll() {
         for (const chatClient of this.chatClients) {
-            chatClient.connect();
+            await chatClient.connect();
+            this.logger.log('Connected');
         }
     }
 
-    public getMessagesSince(id: number): ChatMessage[] {
-        return this.messageHistory.slice(id);
+    public getMessagesSince(id: string): ChatMessage[] {
+        // Find the ID in question, and return all chat messages after that.
+        const index = this.messageHistory.findIndex((value) => {
+            return value.id == id;
+        });
+
+        if (index >= this.messageHistory.length - 1) {
+            return [];
+        }
+
+        return this.messageHistory.slice(index + 1);
     }
 }
