@@ -38,8 +38,25 @@ export class MainGateway implements OnGatewayConnection {
     }
 
     @SubscribeMessage('lastReceivedMessage')
-    lastReceivedMessage(@MessageBody('id') id: string): ChatMessage[] {
-        return this.chatManager.getMessagesSince(id);
+    lastReceivedMessage(@MessageBody('id') id: string): any[] {
+        return this.chatManager
+            .getMessagesSince(id)
+            .map((chatMessage: ChatMessage) => {
+                const emoteArray = Array.from(chatMessage.emotes);
+                return {
+                    id: chatMessage.id,
+                    username: chatMessage.username,
+                    channelName: chatMessage.channelName,
+                    message: chatMessage.message,
+                    date: chatMessage.date,
+                    color: chatMessage.color,
+                    userIsBroadcaster: chatMessage.userIsBroadcaster,
+                    userIsMod: chatMessage.userIsMod,
+                    userIsSubscriber: chatMessage.userIsSubscriber,
+                    userIsVip: chatMessage.userIsVip,
+                    emotes: emoteArray,
+                };
+            });
     }
 
     handleConnection(client: Socket, ...args: any[]): any {
@@ -54,11 +71,18 @@ export class MainGateway implements OnGatewayConnection {
         // Because apparently JSON.stringify won't encode maps, we need to turn it into an array first.
         const emoteArray = Array.from(chatMessage.emotes);
         const chatMessageOutput = {
-            ...chatMessage,
+            id: chatMessage.id,
+            username: chatMessage.username,
+            channelName: chatMessage.channelName,
+            message: chatMessage.message,
+            date: chatMessage.date,
+            color: chatMessage.color,
+            userIsBroadcaster: chatMessage.userIsBroadcaster,
+            userIsMod: chatMessage.userIsMod,
+            userIsSubscriber: chatMessage.userIsSubscriber,
+            userIsVip: chatMessage.userIsVip,
             emotes: emoteArray,
         };
-
         this.server.emit('chatMessage', chatMessageOutput);
-        console.log(chatMessage);
     }
 }
