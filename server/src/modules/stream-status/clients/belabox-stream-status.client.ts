@@ -50,7 +50,10 @@ export class BelaboxStreamStatusClient extends AbstractStreamStatusClient {
                     resolve(true);
                 },
                 error: (err) => {
-                    this.logger.debug(err);
+                    this.logger.warn('Axios request failed', {
+                        context: BelaboxStreamStatusClient.name,
+                        err: err,
+                    });
                     reject(err);
                 },
             });

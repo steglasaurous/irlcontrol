@@ -19,7 +19,10 @@ import { BelaboxStreamStatusClient } from './clients/belabox-stream-status.clien
                 configService: ConfigService,
                 irlStatsService: IrlStatsService,
             ) => {
-                const manager = new StreamStatusManagerService(irlStatsService);
+                const manager = new StreamStatusManagerService(
+                    irlStatsService,
+                    configService.get<string>('locationStreamStatsLogFile'),
+                );
                 const streamSources =
                     configService.get<StreamSource[]>('streamSources');
 

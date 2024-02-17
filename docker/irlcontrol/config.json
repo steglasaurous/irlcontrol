@@ -1,6 +1,12 @@
 {
   "streamSources": [
     {
+      "type": "belabox",
+      "name": "bbox",
+      "url": "${BELABOX_STATS_URL}",
+      "key": "${BELABOX_INGEST_KEY}"
+    },
+    {
       "type": "sls",
       "name": "Main",
       "url": "http://sls:8181/stats",
@@ -17,5 +23,6 @@
   },
   "rtirl": {
     "pullKey": "${RTIRL_PULL_KEY}"
-  }
+  },
+  "locationStreamStatsLogFile": "/server/data/location_stream_stats.txt"
 }

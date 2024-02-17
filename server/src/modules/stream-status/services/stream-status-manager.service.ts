@@ -17,10 +17,10 @@ export class StreamStatusManagerService {
 
     private logger: Logger = new Logger(StreamStatusManagerService.name);
 
-    // FIXME: Future improvement: put this into config instead.  Might not change location but good to keep it together with other configs.
-    private logFile = '/server/data/location_stream_stats.txt';
-
-    constructor(private irlStatsService: IrlStatsService) {}
+    constructor(
+        private irlStatsService: IrlStatsService,
+        private locationStreamStatsLogFile: string,
+    ) {}
     public addStreamStatusClient(client: AbstractStreamStatusClient) {
         this.streamStatusClients.push(client);
     }
@@ -57,9 +57,13 @@ export class StreamStatusManagerService {
                 irlStat: this.irlStatsService.irlStat,
                 streamStatuses: streamStatuses,
             };
-            fs.writeFileSync(this.logFile, JSON.stringify(output) + '\n', {
-                flag: 'a',
-            });
+            fs.writeFileSync(
+                this.locationStreamStatsLogFile,
+                JSON.stringify(output) + '\n',
+                {
+                    flag: 'a',
+                },
+            );
         }
     }
 }
