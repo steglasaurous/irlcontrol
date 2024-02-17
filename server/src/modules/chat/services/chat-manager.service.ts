@@ -45,6 +45,10 @@ export class ChatManagerService {
 
     public getMessagesSince(id: string): ChatMessage[] {
         // Find the ID in question, and return all chat messages after that.
+        if (id == '0') {
+            // return it all.
+            return this.messageHistory;
+        }
         const index = this.messageHistory.findIndex((value) => {
             return value.id == id;
         });
@@ -52,7 +56,6 @@ export class ChatManagerService {
         if (index >= this.messageHistory.length - 1) {
             return [];
         }
-
         return this.messageHistory.slice(index + 1);
     }
 }
