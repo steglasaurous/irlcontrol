@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import {WebsocketService} from "../websocket.service";
+import {Component, Input, OnInit} from '@angular/core';
+import {WebsocketService} from "../../websocket.service";
 import {Howl} from "howler";
 import {Subject} from "rxjs";
 
@@ -16,12 +16,16 @@ interface StreamStatus {
   timestamp: number,
   rtt?: number,
 }
+
 @Component({
   selector: 'app-stream-status',
   templateUrl: './stream-status.component.html',
   styleUrls: ['./stream-status.component.scss']
 })
-export class StreamStatusComponent {
+export class StreamStatusComponent implements OnInit {
+  @Input()
+  playNotifications: boolean = true;
+
   streamStateType = StreamState;
   streamStatusHistory: Map<string, StreamStatus[]> = new Map<string, StreamStatus[]>();
   maxStreamStatusLength = 30;
@@ -40,34 +44,42 @@ export class StreamStatusComponent {
   streamStatusChange$: Subject<StreamState> = new Subject<StreamState>();
 
   constructor(private websocketService: WebsocketService) {
+
+  }
+
+  ngOnInit() {
     this.setupStreamStatusReceiver();
     this.setupStreamStateChangeNotifier();
   }
 
   setupStreamStateChangeNotifier() {
-    this.streamStatusChange$.subscribe((state: StreamState) => {
-      switch (state) {
-        case StreamState.Stable:
-          console.log('stable');
-          this.streamStableSound.play();
-          break;
-        case StreamState.Unstable:
-          console.log('unstable');
-          this.streamUnstableSound.play();
-          break;
-        case StreamState.Disconnected:
-          console.log('disconnected');
-          this.streamUnstableSound.play();
-          break;
-      }
-    });
+    console.log(this.playNotifications);
+
+    if (this.playNotifications) {
+      this.streamStatusChange$.subscribe((state: StreamState) => {
+        switch (state) {
+          case StreamState.Stable:
+            console.log('stable');
+            this.streamStableSound.play();
+            break;
+          case StreamState.Unstable:
+            console.log('unstable');
+            this.streamUnstableSound.play();
+            break;
+          case StreamState.Disconnected:
+            console.log('disconnected');
+            this.streamUnstableSound.play();
+            break;
+        }
+      });
+    }
   }
 
   setupStreamStatusReceiver() {
     this.websocketService.streamStatus$.subscribe((newStreamStatus: StreamStatus) => {
       // Get current stream state so we can compare, whether or not to emit a state change.
       const lastStreamStateResult = this.getLatestStreamStatus(newStreamStatus.streamName); // Could be empty?
-      let lastStreamState: StreamStatus|undefined = undefined;
+      let lastStreamState: StreamStatus | undefined = undefined;
       if (lastStreamStateResult.length > 0) {
         lastStreamState = lastStreamStateResult.slice(-1)[0];
       }
@@ -124,7 +136,7 @@ export class StreamStatusComponent {
 
   getStreamState(streamName: string): StreamState {
     const lastStreamStateResult = this.getLatestStreamStatus(streamName); // Could be empty?
-    let lastStreamState: StreamStatus|undefined = undefined;
+    let lastStreamState: StreamStatus | undefined = undefined;
     if (lastStreamStateResult.length > 0) {
       lastStreamState = lastStreamStateResult.slice(-1)[0];
       if (!lastStreamState.connected) {

@@ -1,0 +1,20 @@
+
+<!-- FIXME: Continue here - modify to support showing multiple streamStatus elements -->
+<div class="flex justify-center w-full">
+  <div
+    *ngFor="let streamStatus of getLatestStreamStatus()"
+    class=""
+    [ngClass]="{
+    connected: getStreamState(streamStatus.streamName) == streamStateType.Stable,
+    disconnected: getStreamState(streamStatus.streamName) == streamStateType.Disconnected,
+    badConnection: getStreamState(streamStatus.streamName) == streamStateType.Unstable }">
+    <div class="relative">
+      <app-stream-bitrate-chart [streamStatusHistory]="streamStatusHistory" [streamName]="streamStatus.streamName"></app-stream-bitrate-chart>
+      <div class="absolute top-0 flex flex-row w-full items-end gap-4 h-14 grow text-center">
+        <div class="text-white text-xs">{{ streamStatus.streamName }}</div>
+        <div class="text-white">{{ streamStatus.bitrate }} kbps</div>
+        <div class="text-white">{{ streamStatus.rtt ?? '-' }} ms</div>
+      </div>
+    </div>
+  </div>
+</div>

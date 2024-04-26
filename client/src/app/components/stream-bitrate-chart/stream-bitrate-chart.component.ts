@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ChartConfiguration, ChartOptions} from 'chart.js';
-import {StreamStatus} from "../utils/stream-status.interface";
+import {StreamStatus} from "../../utils/stream-status.interface";
 
 @Component({
   selector: 'app-stream-bitrate-chart',
@@ -15,25 +15,39 @@ export class StreamBitrateChartComponent implements OnInit {
         label: 'bitrate',
         fill: true,
         borderColor: 'black',
-        backgroundColor: 'rgba(0,255,100,0.3)'
+        backgroundColor: 'rgba(0,102,255,0.3)',
+        pointRadius: 0,
+        segment: {
+          borderWidth: 1
+        }
       },
       {
         data: [ 0 ],
         label: 'rtt',
         fill: true,
-        backgroundColor: 'rgba(0,0,255,0.3)'
+        backgroundColor: 'rgba(0,0,255,0.3)',
+        pointStyle: "line",
+        pointRadius: 0,
+        segment: {
+          borderWidth: 1
+        },
       }
     ]
   };
 
   lineChartOptions: ChartOptions<'line'> = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     scales:
     {
+      x: {
+        display: false
+      },
       y: {
         type: 'linear',
-        beginAtZero: true
+        beginAtZero: true,
+        display: false
       }
     },
     plugins: {
