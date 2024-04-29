@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  wsUrl: 'http://localhost:3000',
+  wsUrl: 'https://irl.steglasaurous.com',
   // rtirlPullKey: '',
   // twitchUsername: ''
 };

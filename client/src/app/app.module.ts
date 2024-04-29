@@ -11,6 +11,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { StreamBitrateChartComponent } from './components/stream-bitrate-chart/stream-bitrate-chart.component';
 import { IrlStatsComponent } from './components/irl-stats/irl-stats.component';
 import { StatusOverlayComponent } from './containers/status-overlay/status-overlay.component';
+import { VideoPreviewComponent } from './components/video-preview/video-preview.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { StatusOverlayComponent } from './containers/status-overlay/status-overl
     StreamBitrateChartComponent,
     IrlStatsComponent,
     StatusOverlayComponent,
+    VideoPreviewComponent,
   ],
   imports: [
     BrowserModule,
