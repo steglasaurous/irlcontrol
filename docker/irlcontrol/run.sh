@@ -3,4 +3,4 @@
 # twitch channel
 # envsubst < /server/config.dist.json > /server/config.json
 envsubst < /config.json > /server/config.json
-cd /server && npm run start
+cd /server && node main.js

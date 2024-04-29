@@ -68,11 +68,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Copy client and server into container for building
 RUN mkdir -p /server && mkdir -p /server/public
-RUN apk update && apk upgrade && apk add gettext dos2unix
+RUN apk update && apk upgrade && apk add gettext dos2unix bash
 COPY --chown=node:node --from=build /usr/src/app/server/node_modules /server/node_modules
 COPY --chown=node:node --from=build /usr/src/app/server/dist /server
 COPY --chown=node:node --from=build /usr/src/app/client/dist/client /server/public
 COPY docker/irlcontrol/config.json /config.json
+
 
 # Put run script in place (to do var substitutions before launching, then launching backend)
 COPY docker/irlcontrol/run.sh /run.sh

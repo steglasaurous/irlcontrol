@@ -75,5 +75,5 @@ volumes:
 
 networks:
   proxynet:
-    name: nginx_proxy-tier
-    external: true
+#    name: nginx_proxy-tier
+#    external: true
