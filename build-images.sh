@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# This script builds docker images directly instead of via docker-compose.  This is useful for cases where
+# you want to start the images rather than have the build managed by docker-compose to simplify managed production rollouts.
 
 # irlcontrol
 docker build . --tag localhost:5000/irlcontrol:latest
