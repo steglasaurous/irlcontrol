@@ -5,7 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainComponent } from './containers/main/main.component';
 import { StreamStatusComponent } from './components/stream-status/stream-status.component';
-import { ChatComponent } from './chat/chat.component';
+import { ChatComponent } from './components/chat/chat.component';
 import { ChatMessageEmotesPipe } from './chat-message-emotes.pipe';
 import { StreamBitrateChartComponent } from './components/stream-bitrate-chart/stream-bitrate-chart.component';
 import { IrlStatsComponent } from './components/irl-stats/irl-stats.component';
