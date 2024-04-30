@@ -1,3 +1,0 @@
-${PUBLIC_IP}.nip.io:443
-
-reverse_proxy irlcontrol:3000
