@@ -2,18 +2,19 @@ import { Module } from '@nestjs/common';
 import { ChatManagerService } from './services/chat-manager.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TwitchChatClient } from './services/clients/twitch-chat.client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TwitchConfig } from '../../configuration';
 
 @Module({
     imports: [ConfigModule],
     providers: [
-        ChatManagerService,
         {
-            provide: ChatManagerService,
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => {
-                const chatManager = new ChatManagerService();
-                // Disabling twitch chat as it's not currently being used.
+            provide: 'ChatClients',
+            inject: [ConfigService, EventEmitter2],
+            useFactory: (
+                configService: ConfigService,
+                eventEmitter: EventEmitter2,
+            ) => {
                 const twitchConfig =
                     configService.get<TwitchConfig>('chat.twitch');
 
@@ -22,13 +23,13 @@ import { TwitchConfig } from '../../configuration';
                     twitchConfig.appClientSecret,
                     twitchConfig.tokenFile,
                     twitchConfig.channel,
+                    eventEmitter,
                 );
 
-                chatManager.addChatClient(twitchClient);
-
-                return chatManager;
+                return [twitchClient];
             },
         },
+        ChatManagerService,
     ],
     exports: [ChatManagerService],
 })

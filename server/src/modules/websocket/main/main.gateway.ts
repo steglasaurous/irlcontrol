@@ -12,6 +12,8 @@ import { ChatManagerService } from '../../chat/services/chat-manager.service';
 import { ChatMessage } from '../../chat/services/chat-message';
 import { IrlStatsService } from '../../irl-stats/services/irl-stats.service';
 import { ConfigService } from '@nestjs/config';
+import { ChatMessageReceiveEvent } from '../../chat/events/chat-message-receive.event';
+import { OnEvent } from '@nestjs/event-emitter';
 @WebSocketGateway({ cors: '^*' })
 export class MainGateway implements OnGatewayConnection {
     @WebSocketServer()
@@ -29,21 +31,6 @@ export class MainGateway implements OnGatewayConnection {
             });
         streamStatusManager.start();
 
-        chatManager
-            .getMessagesObservable()
-            .subscribe((chatMessage: ChatMessage) => {
-                // Because apparently JSON.stringify won't encode maps, we need to turn it into an array first.
-                const emoteArray = Array.from(chatMessage.emotes);
-                const chatMessageOutput = {
-                    ...chatMessage,
-                    emotes: emoteArray,
-                };
-
-                this.server.emit('chatMessage', chatMessageOutput);
-                console.log(chatMessage);
-            });
-        chatManager.connect();
-
         irlStatsService.irlUpdates$.subscribe((irlStats) => {
             this.server.emit('irlStats', irlStats);
             console.log(irlStats);
@@ -51,13 +38,51 @@ export class MainGateway implements OnGatewayConnection {
     }
 
     @SubscribeMessage('lastReceivedMessage')
-    lastReceivedMessage(@MessageBody('id') id: number): ChatMessage[] {
-        return this.chatManager.getMessagesSince(id);
+    lastReceivedMessage(@MessageBody('id') id: string): any[] {
+        return this.chatManager
+            .getMessagesSince(id)
+            .map((chatMessage: ChatMessage) => {
+                const emoteArray = Array.from(chatMessage.emotes);
+                return {
+                    id: chatMessage.id,
+                    username: chatMessage.username,
+                    channelName: chatMessage.channelName,
+                    message: chatMessage.message,
+                    date: chatMessage.date,
+                    color: chatMessage.color,
+                    userIsBroadcaster: chatMessage.userIsBroadcaster,
+                    userIsMod: chatMessage.userIsMod,
+                    userIsSubscriber: chatMessage.userIsSubscriber,
+                    userIsVip: chatMessage.userIsVip,
+                    emotes: emoteArray,
+                };
+            });
     }
 
     handleConnection(client: Socket, ...args: any[]): any {
         client.emit('config', {
             twitchChannel: this.configService.get('chat.twitch.channel'),
         });
+    }
+
+    @OnEvent(ChatMessageReceiveEvent.name)
+    handleChatMessage(chatMessageReceiveEvent: ChatMessageReceiveEvent) {
+        const chatMessage = chatMessageReceiveEvent.chatMessage;
+        // Because apparently JSON.stringify won't encode maps, we need to turn it into an array first.
+        const emoteArray = Array.from(chatMessage.emotes);
+        const chatMessageOutput = {
+            id: chatMessage.id,
+            username: chatMessage.username,
+            channelName: chatMessage.channelName,
+            message: chatMessage.message,
+            date: chatMessage.date,
+            color: chatMessage.color,
+            userIsBroadcaster: chatMessage.userIsBroadcaster,
+            userIsMod: chatMessage.userIsMod,
+            userIsSubscriber: chatMessage.userIsSubscriber,
+            userIsVip: chatMessage.userIsVip,
+            emotes: emoteArray,
+        };
+        this.server.emit('chatMessage', chatMessageOutput);
     }
 }

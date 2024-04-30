@@ -3,6 +3,8 @@ import { AbstractStreamStatusClient } from '../clients/abstract-stream-status.cl
 import { StreamStatus } from '../models/stream-status';
 import { Observable, Subject } from 'rxjs';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { IrlStatsService } from '../../irl-stats/services/irl-stats.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class StreamStatusManagerService {
@@ -15,6 +17,10 @@ export class StreamStatusManagerService {
 
     private logger: Logger = new Logger(StreamStatusManagerService.name);
 
+    constructor(
+        private irlStatsService: IrlStatsService,
+        private locationStreamStatsLogFile: string,
+    ) {}
     public addStreamStatusClient(client: AbstractStreamStatusClient) {
         this.streamStatusClients.push(client);
     }
@@ -34,6 +40,7 @@ export class StreamStatusManagerService {
     @Cron(CronExpression.EVERY_SECOND)
     handleCron() {
         if (this.running) {
+            const streamStatuses: StreamStatus[] = [];
             this.streamStatusClients.forEach((client) => {
                 client.updateStreamStatus().catch((err) => {
                     this.logger.warn(
@@ -42,7 +49,21 @@ export class StreamStatusManagerService {
                     );
                 });
                 this.streamChangeObservable$.next(client.getStreamStatus());
+                streamStatuses.push(client.getStreamStatus());
             });
+
+            // Write this out to a file for later use.
+            const output = {
+                irlStat: this.irlStatsService.irlStat,
+                streamStatuses: streamStatuses,
+            };
+            fs.writeFileSync(
+                this.locationStreamStatsLogFile,
+                JSON.stringify(output) + '\n',
+                {
+                    flag: 'a',
+                },
+            );
         }
     }
 }

@@ -17,8 +17,8 @@ It consists of:
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) on the machine you wish to run the server
    on.
-2. Copy settings.env.dist to settings.env
-3. Edit settings.env with a text editor to add values appropriate for you.
+2. Copy .env.dist to .env
+3. Edit .env with a text editor to add values appropriate for you.
 4. In a terminal (ex: Windows Terminal), run the following command to start the system with defaults:
 
 ```bash 
@@ -89,7 +89,7 @@ your stream more easily.  Here's what I use.
 
 ### Use Virtual Audio Cable and Discord
 
-
+TBD
 
 ## Larix Broadcaster Video Settings I Use
 
@@ -152,5 +152,5 @@ npx ng serve
 # Packaging for release
 
 - [ ] SLS: Allow config for passworded connections
-- [ ] Move code base to github (clean out PII first)
+
 

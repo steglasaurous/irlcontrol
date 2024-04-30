@@ -16,54 +16,52 @@ services:
     volumes:
       - ./docker/noalbs/config.json:/config.json
     restart: always
-    env_file:
-      - settings.env
+    environment:
+      - TWITCH_BOT_USERNAME=${TWITCH_BOT_USERNAME}
+      - TWITCH_BOT_OAUTH=${TWITCH_BOT_OAUTH}
+      - TWITCH_USERNAME=${TWITCH_USERNAME}
+      - OBS_HOST=${OBS_HOST}
+      - OBS_PASSWORD=${OBS_PASSWORD}
+      - OBS_PORT=${OBS_PORT}
+      - OBS_SCENE_NORMAL=${OBS_SCENE_NORMAL}
+      - OBS_SCENE_LOW_BITRATE=${OBS_SCENE_LOW_BITRATE}
+      - OBS_SCENE_OFFLINE=${OBS_SCENE_OFFLINE}
 
   irlcontrol:
     build: .
+    # image: localhost:5000/irlcontrol:latest
     volumes:
-      - ./docker/irlcontrol/config.json:/config.json
+      - irlcontrol-data:/server/data
     restart: always
-    env_file:
-      - settings.env
-
-  caddy:
-    build: docker/caddy
-    restart: unless-stopped
+    networks:
+      - default
+      - proxynet
+    environment:
+      - VIRTUAL_HOST=${SITE_VIRTUAL_HOST}
+      # If hosting with SSL, uncomment these lines and ensure these variables are present in .env
+#      - LETSENCRYPT_HOST=${SITE_LETSENCRYPT_HOST}
+#      - LETSENCRYPT_EMAIL=${SITE_LETSENCRYPT_EMAIL}
+      - TWITCH_USERNAME=${TWITCH_USERNAME}
+      - RTIRL_PULL_KEY=${RTIRL_PULL_KEY}
+      - TWITCH_APP_CLIENT_ID=${TWITCH_APP_CLIENT_ID}
+      - TWITCH_APP_CLIENT_SECRET=${TWITCH_APP_CLIENT_SECRET}
+      - BELABOX_STATS_URL=${BELABOX_STATS_URL}
+      - BELABOX_INGEST_KEY=${BELABOX_INGEST_KEY}
     ports:
-      - "80:80" # NOTE: Due to the way SSL certs are resolved, this port needs to be open so it can validate ownership.  Otherwise SSL will fail.
-      - "443:443"
-      - "443:443/udp"
-    env_file:
-      - settings.env
-    volumes:
-      - ./Caddyfile:/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
+      - 3000
+
 
 # Uncomment this for an SLS instance suited for an audio feedback channel.  You can use this to hear your stream back
 # on your mobile device using an SRT player like Haivision Play Pro.
   slsaudio:
     build: ./docker/sls
     ports:
-      - "30001:30000/udp"
-      - "8182:8181/tcp"
+      - "30001:30001/udp"
+      - "8182:8182/tcp"
     restart: always
     volumes:
       - sls_data_audio:/data
       - ./docker/sls/sls-audio.conf:/sls.conf
-
-# Uncomment this for an additional SLS instance if you're receiving more than one video stream.
-# Ex: I use this for a "face cam" on my bike streams.
-#  sls2:
-#    image: b3ckontwitch/sls-b3ck-edit
-#    ports:
-#      - "30002:30000/udp"
-#      - "8183:8181/tcp"
-#    restart: always
-#    volumes:
-#      - sls_data_2:/data
-#      - ./sls-2.conf:/etc/sls/sls.conf
 
 # If using a source that requires RTMP, uncomment this to build and start the RTMP server.
 #  rtmp:
@@ -73,9 +71,66 @@ services:
 #      - 8090:8090
 #      - 1935:1935
 
+# This runs the web server that reverse-proxies to everything else.  If you have an existing server (like nginx),
+# you can comment this out.
+  webserver:
+    build: ./docker/nginx
+    restart: unless-stopped
+    volumes:
+      - html:/usr/share/nginx/html
+    networks:
+      - proxynet
+      - default
+# If you have DNS setup to host a real host/domain, uncomment these lines and ensure these 3 variables are filled in.
+#    environment:
+#      - VIRTUAL_HOST=${SITE_VIRTUAL_HOST}
+#      - LETSENCRYPT_HOST=${SITE_LETSENCRYPT_HOST}
+#      - LETSENCRYPT_EMAIL=${SITE_LETSENCRYPT_EMAIL}
+
+  proxy:
+    build: ./docker/proxy
+    restart: unless-stopped
+    ports:
+      # NOTE: If you already have a webserver or can't run on the regular ports, change this to something useful to you.
+      - 80:80
+      - 443:443
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    volumes:
+      - certs:/etc/nginx/certs:ro
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - proxynet
+
+  letsencrypt-companion:
+    image: nginxproxy/acme-companion
+    restart: unless-stopped
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost.d:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxynet
+    depends_on:
+      - proxy
+    environment:
+      - DEFAULT_EMAIL="${SITE_LETSENCRYPT_EMAIL}"
+
 volumes:
   sls_data:
   sls_data_audio:
   sls_data_2:
-  caddy_data:
-  caddy_config:
+  irlcontrol-data:
+  html:
+  certs:
+  vhost.d:
+  acme:
+
+networks:
+  proxynet:
+#    name: nginx_proxy-tier
+#    external: true
