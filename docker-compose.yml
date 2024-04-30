@@ -19,6 +19,7 @@ services:
     environment:
       - TWITCH_BOT_USERNAME=${TWITCH_BOT_USERNAME}
       - TWITCH_BOT_OAUTH=${TWITCH_BOT_OAUTH}
+      - TWITCH_USERNAME=${TWITCH_USERNAME}
       - OBS_HOST=${OBS_HOST}
       - OBS_PASSWORD=${OBS_PASSWORD}
       - OBS_PORT=${OBS_PORT}
@@ -28,8 +29,9 @@ services:
 
   irlcontrol:
     build: .
+    # image: localhost:5000/irlcontrol:latest
     volumes:
-      - ./server/data:/server/data
+      - irlcontrol-data:/server/data
     restart: always
     networks:
       - default
