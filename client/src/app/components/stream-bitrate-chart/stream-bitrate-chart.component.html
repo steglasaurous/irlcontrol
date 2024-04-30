@@ -1,7 +1,3 @@
-<div class="canvasContainer">
-  <canvas baseChart
-          [data]="lineChartData"
-          [options]="lineChartOptions"
-          [type]="'line'">
-  </canvas>
+<div>
+  <canvasjs-chart [options]="chartOptions" [styles]="{width: '100%', height:'60px'}" (chartInstance)="getChartInstance($event)"></canvasjs-chart>
 </div>

@@ -1,44 +1,11 @@
-
-.streamStatusContainer {
-  display: flex;
-  justify-items: center;
-  width: 100%;
-}
-
-.streamStatus {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-  gap: 10px;
-  height: 50px;
-  flex-grow: 1;
-  text-align: center;
-  font-weight: bold;
-  border: 1px solid black;
-  width: 100%;
-  .bitrate {
-    //font-size: 32px;
-  }
-  .streamName {
-
-  }
-
-  //app-stream-bitrate-chart {
-  //  position: absolute;
-  //  top: 0;
-  //  left: 0;
-  //}
-}
-
 .connected {
-  background-color: black;
+  //background-color: black;
 }
 
 .disconnected {
-  background-color: #8f0000;
+  background-color: rgba(255, 100, 100, 0.5);
 }
 
 .badConnection {
-  background-color: #979700;
+  background-color: rgba(255, 255, 63, 0.5);
 }

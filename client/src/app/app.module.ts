@@ -7,11 +7,11 @@ import { MainComponent } from './containers/main/main.component';
 import { StreamStatusComponent } from './components/stream-status/stream-status.component';
 import { ChatComponent } from './chat/chat.component';
 import { ChatMessageEmotesPipe } from './chat-message-emotes.pipe';
-import { NgChartsModule } from 'ng2-charts';
 import { StreamBitrateChartComponent } from './components/stream-bitrate-chart/stream-bitrate-chart.component';
 import { IrlStatsComponent } from './components/irl-stats/irl-stats.component';
 import { StatusOverlayComponent } from './containers/status-overlay/status-overlay.component';
 import { VideoPreviewComponent } from './components/video-preview/video-preview.component';
+import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
 
 @NgModule({
   declarations: [
@@ -25,12 +25,8 @@ import { VideoPreviewComponent } from './components/video-preview/video-preview.
     StatusOverlayComponent,
     VideoPreviewComponent,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    NgChartsModule
-  ],
+  imports: [BrowserModule, AppRoutingModule, CanvasJSAngularChartsModule],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
