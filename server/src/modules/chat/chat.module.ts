@@ -24,6 +24,7 @@ import { TwitchConfig } from '../../configuration';
                     twitchConfig.tokenFile,
                     twitchConfig.channel,
                     eventEmitter,
+                    twitchConfig.wsUrl ? twitchConfig.wsUrl : undefined,
                 );
 
                 return [twitchClient];

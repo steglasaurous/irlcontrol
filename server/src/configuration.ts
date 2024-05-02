@@ -4,6 +4,7 @@ export enum StreamSourceType {
     sls = 'sls',
     rtmp = 'rtmp',
     belabox = 'belabox',
+    dummy = 'dummy',
 }
 
 export interface StreamSource {
@@ -18,6 +19,7 @@ export interface TwitchConfig {
     appClientSecret: string;
     tokenFile: string;
     channel: string;
+    wsUrl?: string;
 }
 
 export interface Rtirl {
