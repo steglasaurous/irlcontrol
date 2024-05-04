@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { IrlStatsModule } from './modules/irl-stats/irl-stats.module';
 import configuration from './configuration';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import {ServeStaticModule} from "@nestjs/serve-static";
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Module({
     imports: [
@@ -20,6 +23,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         }),
         IrlStatsModule,
         EventEmitterModule.forRoot(),
+        ServeStaticModule.forRoot({
+            rootPath: fs.existsSync(join(__dirname, '..', 'public')) ? join(__dirname, '..', 'public') : join(__dirname, 'public')
+        })
     ],
     providers: [AppService],
 })
