@@ -83,7 +83,7 @@ export class TwitchChatClient extends AbstractChatClient {
                 this.eventSub = new EventSubWsListener({
                     apiClient: this.apiClient,
                     // url: this.wsUrl,
-                    logger: { minLevel: 'DEBUG' },
+                    // logger: { minLevel: 'DEBUG' },
                 });
 
                 this.eventSub.start();
@@ -157,21 +157,75 @@ export class TwitchChatClient extends AbstractChatClient {
             );
         });
 
-        this.eventSub.onChannelRaidTo(user.id, (eventSubEvent) => {});
+        this.eventSub.onChannelRaidTo(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.raidedBroadcasterName,
+                    eventSubEvent.raidingBroadcasterName,
+                    TwitchChannelEventType.Raid,
+                    new Date(),
+                    'Raided by ' + eventSubEvent.raidingBroadcasterName + '!!',
+                ),
+            );
+        });
 
-        // this.eventSub.onChannelCheer(user.id, (eventSubEvent) => {});
+        this.eventSub.onChannelCheer(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.userName,
+                    TwitchChannelEventType.Cheer,
+                    new Date(),
+                    `${eventSubEvent.userName} cheered ${eventSubEvent.bits} bits!`,
+                ),
+            );
+        });
         //
-        // this.eventSub.onChannelSubscription(user.id, (eventSubEvent) => {});
+        this.eventSub.onChannelSubscription(user.id, (eventSubEvent) => {
+            let message = `${eventSubEvent.userName} just subscribed at tier ${eventSubEvent.tier}!`;
+            if (eventSubEvent.isGift) {
+                message = `${eventSubEvent.userName} just gifted a sub at tier ${eventSubEvent.tier}!`;
+            }
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.userName,
+                    TwitchChannelEventType.Subscription,
+                    new Date(),
+                    message,
+                ),
+            );
+        });
         //
-        // this.eventSub.onChannelSubscriptionGift(user.id, (eventSubEvent) => {});
-        // this.eventSub.onChannelSubscriptionMessage(
-        //     user.id,
-        //     (eventSubEvent) => {},
-        // );
+        this.eventSub.onChannelSubscriptionGift(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.gifterName,
+                    TwitchChannelEventType.Subscription,
+                    new Date(),
+                    `${eventSubEvent.gifterName} just gifted ${eventSubEvent.amount} tier ${eventSubEvent.tier} subs!`,
+                ),
+            );
+        });
+        this.eventSub.onChannelSubscriptionMessage(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.userName,
+                    TwitchChannelEventType.Subscription,
+                    new Date(),
+                    `New sub message from ${eventSubEvent.userName}: ${eventSubEvent.messageText}`,
+                ),
+            );
+        });
         //
         this.eventSub.onChannelRedemptionAdd(user.id, (eventSubEvent) => {
-            //console.log('Got channel point redemption!', eventSubEvent);
-
             let message =
                 'ChannelPoints Redemption: ' +
                 eventSubEvent.rewardTitle +
@@ -192,20 +246,129 @@ export class TwitchChatClient extends AbstractChatClient {
                 ),
             );
         });
-        // this.eventSub.onChannelPollBegin(user.id, (eventSubEvent) => {});
-        // this.eventSub.onChannelPollProgress(user.id, (eventSubEvent) => {});
-        // this.eventSub.onChannelPollEnd(user.id, (eventSubEvent) => {});
-        // this.eventSub.onChannelHypeTrainBegin(user.id, (eventSubEvent) => {});
-        // this.eventSub.onChannelHypeTrainProgress(
-        //     user.id,
-        //     (eventSubEvent) => {},
-        // );
-        // this.eventSub.onChannelHypeTrainEnd(user.id, (eventSubEvent) => {});
-        //
-        // this.eventSub.onStreamOnline(user.id, (eventSubEvent) => {});
-        // this.eventSub.onStreamOffline(user.id, (eventSubEvent) => {});
+        this.eventSub.onChannelPollBegin(user.id, (eventSubEvent) => {
+            const pollChoices = eventSubEvent.choices
+                .map((value) => {
+                    return `${value.title}`;
+                })
+                .join(', ');
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.PollBegin,
+                    new Date(),
+                    `New chat poll started: ${eventSubEvent.title} - Choices: ${pollChoices}`,
+                ),
+            );
+        });
+        this.eventSub.onChannelPollProgress(user.id, (eventSubEvent) => {
+            const pollChoices = eventSubEvent.choices
+                .map((value) => {
+                    return `${value.title}: ${value.totalVotes}`;
+                })
+                .join(', ');
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.PollProgress,
+                    new Date(),
+                    `Poll progress: ${pollChoices}`,
+                ),
+            );
+        });
+        this.eventSub.onChannelPollEnd(user.id, (eventSubEvent) => {
+            const pollChoices = eventSubEvent.choices
+                .map((value) => {
+                    return `${value.title}: ${value.totalVotes}`;
+                })
+                .join(', ');
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.PollEnd,
+                    new Date(),
+                    `Poll progress: ${pollChoices}`,
+                ),
+            );
+        });
+
+        this.eventSub.onChannelHypeTrainBegin(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.HypeTrainBegin,
+                    new Date(),
+                    `Hypetrain starting at level ${eventSubEvent.level} at ${eventSubEvent.progress}%!`,
+                ),
+            );
+        });
+        this.eventSub.onChannelHypeTrainProgress(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    eventSubEvent.id,
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.HypeTrainProgress,
+                    new Date(),
+                    `Hypetrain progress: Level ${eventSubEvent.level} at ${eventSubEvent.progress}%!`,
+                ),
+            );
+        });
+
+        this.eventSub.onChannelHypeTrainEnd(user.id, (eventSubEvent) => {
+            const contributors = eventSubEvent.topContributors
+                .map((value) => {
+                    return value.userName;
+                })
+                .join(', ');
+
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    eventSubEvent.id,
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.HypeTrainEnd,
+                    new Date(),
+                    `Hypetrain ended: Level ${eventSubEvent.level} at ${eventSubEvent.total}%!  Top contributors: ${contributors}`,
+                ),
+            );
+        });
+
+        this.eventSub.onStreamOnline(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.StreamOnline,
+                    new Date(),
+                    `*** Stream ONLINE ***`,
+                ),
+            );
+        });
+
+        this.eventSub.onStreamOffline(user.id, (eventSubEvent) => {
+            this.messages$.next(
+                this.getChatMessageForChannelEvent(
+                    Date.now().toString(),
+                    eventSubEvent.broadcasterName,
+                    eventSubEvent.broadcasterName,
+                    TwitchChannelEventType.StreamOnline,
+                    new Date(),
+                    `*** Stream OFFLINE ***`,
+                ),
+            );
+        });
     }
-    // FIXME: CONTINUE HERE
+
     private getChatMessageForChannelEvent(
         id: string,
         channelName: string,
@@ -228,6 +391,7 @@ export class TwitchChatClient extends AbstractChatClient {
             userIsVip: false,
             message: message,
             emotes: new Map<string, string[]>(),
+            twitchChannelEventType: twitchChannelEventType,
         };
     }
 
