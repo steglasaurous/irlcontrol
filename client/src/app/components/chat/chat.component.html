@@ -1,0 +1,5 @@
+<div class="m-2 text-2xl overflow-auto h-[400px]" #chatContainer>
+  <div class="bg-blue-50 mt-2 mb-2 leading-6" *ngFor="let chatMessage of chatMessages">
+    <span class="font-bold" style="color: {{ chatMessage.color }}">{{ chatMessage.username }}</span>: <span class="message" [innerHTML]="chatMessage | chatMessageEmotes"></span>
+  </div>
+</div>

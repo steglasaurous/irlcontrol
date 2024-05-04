@@ -15,7 +15,11 @@ export class IrlStatsService {
     constructor(
         @Inject('RTIRL_PULL_KEY') private rtirlPullKey: string,
         private readonly httpService: HttpService,
-    ) {}
+    ) {
+        if (!rtirlPullKey) {
+            this.running = false;
+        }
+    }
 
     start() {
         this.running = true;
