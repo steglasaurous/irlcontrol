@@ -4,7 +4,6 @@ import { StreamStatus } from '../../utils/stream-status.interface';
 @Component({
   selector: 'app-stream-bitrate-chart',
   templateUrl: './stream-bitrate-chart.component.html',
-  styleUrls: ['./stream-bitrate-chart.component.scss'],
 })
 export class StreamBitrateChartComponent implements OnInit {
   chart: any;

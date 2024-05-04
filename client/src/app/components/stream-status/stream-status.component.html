@@ -5,7 +5,6 @@
     >
     <div class="border-black border">
       <app-stream-bitrate-chart [streamStatusHistory]="streamStatusHistory" [streamName]="streamStatus.streamName"></app-stream-bitrate-chart>
-<!--      <div class="absolute top-0 flex flex-row w-full items-end gap-4 h-14 text-center">-->
       <div class="absolute top-0 flex flex-row w-full items-end gap-4 h-[60px] text-center bg-transparent" [ngClass]="{
     connected: getStreamState(streamStatus.streamName) == streamStateType.Stable,
     disconnected: getStreamState(streamStatus.streamName) == streamStateType.Disconnected,
