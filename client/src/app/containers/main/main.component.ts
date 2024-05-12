@@ -6,5 +6,6 @@ import {Component} from '@angular/core';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
+  showVideoPreview = true;
 
 }

@@ -1,5 +1,6 @@
 <div class="flex flex-col">
   <app-stream-status></app-stream-status>
-  <app-video-preview></app-video-preview>
+  <button (click)="showVideoPreview = !showVideoPreview">Show/Hide Video</button>
+  <app-video-preview [hidden]="!showVideoPreview"></app-video-preview>
   <app-chat></app-chat>
 </div>
