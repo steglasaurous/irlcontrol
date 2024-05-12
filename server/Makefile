@@ -1,11 +1,19 @@
+ifeq ($(OS),Windows_NT)
+	SHELL := powershell.exe
+	.SHELLFLAGS := -NoProfile -Command
+endif
+
 SRCS=$(find src public -type f)
 
 build-prod: node_modules
 	npx nest build --builder=webpack
 	$(MAKE) dist/node_modules
 
-build-dev: node_modules ${SRCS}
+build-dev: node_modules config.json ${SRCS}
 	npx nest build
+
+config.json: config.json.dist
+	npx envsub --env-file=.env config.json.dist config.json
 
 dist/node_modules: node_modules package.json package-lock.json
 ifeq ($(OS),Windows_NT)
@@ -23,10 +31,13 @@ endif
 node_modules: package.json package-lock.json
 	npm ci
 
+start: node_modules config.json
+	npx nest start --watch
+
 clean:
 ifeq ($(OS),Windows_NT)
-	Remove-Item dist
-	Remove-Item node_modules
+	& { exit $$(powershell.exe -NoProfile -Command Remove-Item -ErrorAction Ignore -Recurse dist); }
+	& { exit $$(powershell.exe -NoProfile -Command Remove-Item -ErrorAction Ignore -Recurse node_modules); }
 else
 	rm -rf dist node_modules
 endif
