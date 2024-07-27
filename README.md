@@ -116,14 +116,15 @@ the frontend.
 
 ## Setup
 
-Create configuration file based on config.dist.json.
+Create .env with the contents of .env.dist and populate values appropriately. 
 
-NPM install all the things
+Build with make:
 
 ```
-cd server && npm i && cd ..
-cd client && npm i && cd ..
+make build-dev
 ```
+
+This installs packages for both server and client and builds them.  
 
 Starting the server:
 

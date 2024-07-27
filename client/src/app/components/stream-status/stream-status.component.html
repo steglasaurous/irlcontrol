@@ -11,7 +11,7 @@
     badConnection: getStreamState(streamStatus.streamName) == streamStateType.Unstable }">
         <div class="text-white text-xs font-bold pl-1">{{ streamStatus.streamName }}</div>
         <div class="text-white">{{ streamStatus.bitrate }} kbps</div>
-        <div class="text-white">{{ streamStatus.rtt ?? '-' }} ms</div>
+        <div class="text-white" *ngIf="streamStatus.rtt != null">{{ streamStatus.rtt ?? '-' }} ms</div>
       </div>
     </div>
   </div>
