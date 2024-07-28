@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { WebsocketService } from '../../websocket.service';
 import { Howl } from 'howler';
 import { Subject } from 'rxjs';
+import { BelaboxWsService } from '../../services/belabox-ws.service';
 
 export enum StreamState {
   Stable,
@@ -14,6 +15,7 @@ interface StreamStatus {
   bitrate: number;
   connected: boolean;
   timestamp: number;
+  streamSourceType: string; // belabox, sls, rtmp, dummy
   rtt?: number;
 }
 
@@ -46,7 +48,10 @@ export class StreamStatusComponent implements OnInit {
 
   streamStatusChange$: Subject<StreamState> = new Subject<StreamState>();
 
-  constructor(private websocketService: WebsocketService) {}
+  constructor(
+    private websocketService: WebsocketService,
+    private belaboxWs: BelaboxWsService,
+  ) {}
 
   ngOnInit() {
     this.setupStreamStatusReceiver();
@@ -79,70 +84,22 @@ export class StreamStatusComponent implements OnInit {
   setupStreamStatusReceiver() {
     this.websocketService.streamStatus$.subscribe(
       (newStreamStatus: StreamStatus) => {
-        // Get current stream state so we can compare, whether or not to emit a state change.
-        const lastStreamStateResult = this.getLatestStreamStatus(
-          newStreamStatus.streamName,
-        ); // Could be empty?
-        let lastStreamState: StreamStatus | undefined = undefined;
-        if (lastStreamStateResult.length > 0) {
-          lastStreamState = lastStreamStateResult.slice(-1)[0];
+        // Check stream type.  If we have a belabox type, try connecting to belabox on the local network if available.
+        if (
+          newStreamStatus.streamSourceType == 'belabox' &&
+          !this.belaboxWs.getIsActivated()
+        ) {
+          console.log('Detected belabox stream source - activating belaboxws');
+          this.belaboxWs.connect();
         }
 
-        if (!this.streamStatusHistory.has(newStreamStatus.streamName)) {
-          this.streamStatusHistory.set(newStreamStatus.streamName, []);
-        }
-
-        let streamStatusList = this.streamStatusHistory.get(
-          newStreamStatus.streamName,
-        );
-        if (streamStatusList != undefined) {
-          streamStatusList.push(newStreamStatus);
-          if (streamStatusList.length > this.maxStreamStatusLength) {
-            streamStatusList.shift();
-          }
-        }
-
-        // Check for state change.
-        if (lastStreamState != undefined) {
-          if (lastStreamState.connected != newStreamStatus.connected) {
-            if (!newStreamStatus.connected) {
-              this.streamStatusChange$.next(StreamState.Disconnected);
-            } else {
-              this.streamStatusChange$.next(StreamState.Stable);
-            }
-          }
-          if (
-            lastStreamState.rtt != undefined &&
-            newStreamStatus.rtt != undefined
-          ) {
-            if (
-              lastStreamState.rtt > this.streamStableMaxRtt &&
-              newStreamStatus.rtt < this.streamStableMaxRtt
-            ) {
-              this.streamStatusChange$.next(StreamState.Stable);
-            } else if (
-              lastStreamState.rtt < this.streamStableMaxRtt &&
-              newStreamStatus.rtt > this.streamStableMaxRtt
-            ) {
-              this.streamStatusChange$.next(StreamState.Unstable);
-            }
-          } else {
-            // Bitrate test for RTMP (since RTT isn't available)
-            if (
-              lastStreamState.bitrate > this.streamStableMinBitrate &&
-              newStreamStatus.bitrate < this.streamStableMinBitrate
-            ) {
-              this.streamStatusChange$.next(StreamState.Unstable);
-            } else if (
-              lastStreamState.bitrate < this.streamStableMinBitrate &&
-              newStreamStatus.bitrate > this.streamStableMinBitrate
-            ) {
-              this.streamStatusChange$.next(StreamState.Stable);
-            }
-          }
-        }
+        this.processStreamStatusUpdate(newStreamStatus);
       },
     );
+
+    this.belaboxWs.streamStatus$.subscribe((newStreamStatus: StreamStatus) => {
+      this.processStreamStatusUpdate(newStreamStatus);
+    });
   }
 
   getLatestStreamStatus(streamNameFilter: string = ''): StreamStatus[] {
@@ -184,5 +141,70 @@ export class StreamStatusComponent implements OnInit {
     }
 
     return StreamState.Disconnected;
+  }
+
+  processStreamStatusUpdate(newStreamStatus: StreamStatus) {
+    // Get current stream state so we can compare, whether or not to emit a state change.
+    const lastStreamStateResult = this.getLatestStreamStatus(
+      newStreamStatus.streamName,
+    ); // Could be empty?
+    let lastStreamState: StreamStatus | undefined = undefined;
+    if (lastStreamStateResult.length > 0) {
+      lastStreamState = lastStreamStateResult.slice(-1)[0];
+    }
+
+    if (!this.streamStatusHistory.has(newStreamStatus.streamName)) {
+      this.streamStatusHistory.set(newStreamStatus.streamName, []);
+    }
+
+    let streamStatusList = this.streamStatusHistory.get(
+      newStreamStatus.streamName,
+    );
+    if (streamStatusList != undefined) {
+      streamStatusList.push(newStreamStatus);
+      if (streamStatusList.length > this.maxStreamStatusLength) {
+        streamStatusList.shift();
+      }
+    }
+
+    // Check for state change.
+    if (lastStreamState != undefined) {
+      if (lastStreamState.connected != newStreamStatus.connected) {
+        if (!newStreamStatus.connected) {
+          this.streamStatusChange$.next(StreamState.Disconnected);
+        } else {
+          this.streamStatusChange$.next(StreamState.Stable);
+        }
+      }
+      if (
+        lastStreamState.rtt != undefined &&
+        newStreamStatus.rtt != undefined
+      ) {
+        if (
+          lastStreamState.rtt > this.streamStableMaxRtt &&
+          newStreamStatus.rtt < this.streamStableMaxRtt
+        ) {
+          this.streamStatusChange$.next(StreamState.Stable);
+        } else if (
+          lastStreamState.rtt < this.streamStableMaxRtt &&
+          newStreamStatus.rtt > this.streamStableMaxRtt
+        ) {
+          this.streamStatusChange$.next(StreamState.Unstable);
+        }
+      } else {
+        // Bitrate test for RTMP (since RTT isn't available)
+        if (
+          lastStreamState.bitrate > this.streamStableMinBitrate &&
+          newStreamStatus.bitrate < this.streamStableMinBitrate
+        ) {
+          this.streamStatusChange$.next(StreamState.Unstable);
+        } else if (
+          lastStreamState.bitrate < this.streamStableMinBitrate &&
+          newStreamStatus.bitrate > this.streamStableMinBitrate
+        ) {
+          this.streamStatusChange$.next(StreamState.Stable);
+        }
+      }
+    }
   }
 }

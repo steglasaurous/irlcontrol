@@ -3,6 +3,7 @@ import { StreamStatus } from '../models/stream-status';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
+import { StreamSourceType } from '../../../configuration';
 
 @Injectable()
 export class RtmpStreamStatusClient extends AbstractStreamStatusClient {
@@ -11,6 +12,7 @@ export class RtmpStreamStatusClient extends AbstractStreamStatusClient {
         0,
         false,
         Date.now(),
+        StreamSourceType.rtmp,
         undefined,
     );
 
@@ -42,6 +44,7 @@ export class RtmpStreamStatusClient extends AbstractStreamStatusClient {
                                 0,
                                 false,
                                 Date.now(),
+                                StreamSourceType.rtmp,
                                 null,
                             );
                         } else {
@@ -51,6 +54,7 @@ export class RtmpStreamStatusClient extends AbstractStreamStatusClient {
                                 Math.floor(parseInt(obj.rtmp.bw_in) / 1000),
                                 true,
                                 Date.now(),
+                                StreamSourceType.rtmp,
                                 null,
                             );
                         }
@@ -60,6 +64,7 @@ export class RtmpStreamStatusClient extends AbstractStreamStatusClient {
                             0,
                             false,
                             Date.now(),
+                            StreamSourceType.rtmp,
                             null,
                         );
                     }

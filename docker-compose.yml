@@ -64,12 +64,12 @@ services:
       - ./docker/sls/sls-audio.conf:/sls.conf
 
 # If using a source that requires RTMP, uncomment this to build and start the RTMP server.
-#  rtmp:
-#    build: docker/rtmp
-#    restart: unless-stopped
-#    ports:
-#      - 8090:8090
-#      - 1935:1935
+  rtmp:
+    build: docker/rtmp
+    restart: unless-stopped
+    ports:
+      - 8090:8090
+      - 1935:1935
 
 # This runs the web server that reverse-proxies to everything else.  If you have an existing server (like nginx),
 # you can comment this out.

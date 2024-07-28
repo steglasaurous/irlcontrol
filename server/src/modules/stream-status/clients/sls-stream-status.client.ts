@@ -2,6 +2,7 @@ import { AbstractStreamStatusClient } from './abstract-stream-status.client';
 import { StreamStatus } from '../models/stream-status';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
+import { StreamSourceType } from '../../../configuration';
 
 @Injectable()
 export class SlsStreamStatusClient extends AbstractStreamStatusClient {
@@ -10,6 +11,7 @@ export class SlsStreamStatusClient extends AbstractStreamStatusClient {
         0,
         false,
         Date.now(),
+        StreamSourceType.sls,
         undefined,
     );
 
@@ -39,6 +41,7 @@ export class SlsStreamStatusClient extends AbstractStreamStatusClient {
                             obj.publishers[this.key].bitrate ?? 0,
                             obj.status == 'ok',
                             Date.now(),
+                            StreamSourceType.sls,
                             obj.publishers[this.key].rtt ?? -1,
                         );
                     } else {
@@ -47,6 +50,7 @@ export class SlsStreamStatusClient extends AbstractStreamStatusClient {
                             0,
                             false,
                             Date.now(),
+                            StreamSourceType.sls,
                             -1,
                         );
                     }
