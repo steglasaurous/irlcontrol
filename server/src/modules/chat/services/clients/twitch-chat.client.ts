@@ -27,6 +27,8 @@ export class TwitchChatClient extends AbstractChatClient {
     private eventSub: EventSubWsListener;
     private logger: Logger = new Logger(TwitchChatClient.name);
 
+    private sentMessageCounter = 0;
+
     constructor(
         @Inject('TWITCH_APP_CLIENT_ID') private twitchAppClientId: string,
         @Inject('TWITCH_APP_CLIENT_SECRET')
@@ -406,6 +408,10 @@ export class TwitchChatClient extends AbstractChatClient {
         });
     }
 
+    getDefaultChannel(): string {
+        return this.twitchChannel;
+    }
+
     private loadTokenData(): void {
         if (fs.existsSync(this.tokenFilePath)) {
             this.tokenData = JSON.parse(
@@ -414,7 +420,25 @@ export class TwitchChatClient extends AbstractChatClient {
         }
     }
 
-    sendMessage(channelName: string, message: string): Promise<void> {
-        return this.chatClient.say(channelName, message);
+    async sendMessage(channelName: string, message: string): Promise<void> {
+        await this.chatClient.say(channelName, message);
+        this.sentMessageCounter++;
+
+        // Emit this as a new message so it appears in history.
+        this.messages$.next({
+            id: 'SENT-' + this.sentMessageCounter,
+            messageType: ChatMessageType.ChatMessage,
+            username: this.twitchChannel, // Since the channel is generally the same name as the broadcaster, using it here.
+            channelName: channelName,
+            message: message,
+            emotes: new Map<string, string[]>(),
+            date: new Date(),
+            color: '#ff00ff',
+            client: this,
+            userIsBroadcaster: true,
+            userIsMod: false,
+            userIsSubscriber: false,
+            userIsVip: false,
+        });
     }
 }

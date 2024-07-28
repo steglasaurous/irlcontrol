@@ -1,6 +1,6 @@
-<div class="flex flex-col">
-  <app-stream-status></app-stream-status>
-  <button (click)="showVideoPreview = !showVideoPreview">Show/Hide Video</button>
-  <app-video-preview [hidden]="!showVideoPreview"></app-video-preview>
-  <app-chat></app-chat>
+<div class="flex flex-col h-screen overflow-hidden">
+  <app-stream-status class="h-14"></app-stream-status>
+<!--  <button (click)="showVideoPreview = !showVideoPreview">Show/Hide Video</button>-->
+  <app-video-preview [hidden]="!showVideoPreview" class="h-1/3"></app-video-preview>
+  <app-chat class="h-2/3 flex-grow"></app-chat>
 </div>

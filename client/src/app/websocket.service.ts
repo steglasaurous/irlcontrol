@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
-import {io, Socket} from "socket.io-client";
+import { io, Socket } from 'socket.io-client';
 import { environment } from '../environments/environment';
-import {Subject} from "rxjs";
-import {StreamStatus} from "./utils/stream-status.interface";
-import {ChatMessage} from "./utils/chat-message.interface";
-import {ConfigMessage} from "./utils/config-message.interface";
+import { Subject } from 'rxjs';
+import { StreamStatus } from './utils/stream-status.interface';
+import { ChatMessage } from './utils/chat-message.interface';
+import { ConfigMessage } from './utils/config-message.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebsocketService {
   socket!: Socket;
-
 
   streamStatusSubject = new Subject<StreamStatus>();
   streamStatus$ = this.streamStatusSubject.asObservable();
@@ -43,5 +42,10 @@ export class WebsocketService {
     this.socket.on('config', (config: ConfigMessage) => {
       this.config$.next(config);
     });
+  }
+
+  sendMessage(message: string) {
+    console.log('sendMessage: ', message);
+    this.socket.emit('sendMessage', { message: message });
   }
 }

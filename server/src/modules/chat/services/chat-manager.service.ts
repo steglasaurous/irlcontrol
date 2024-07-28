@@ -58,4 +58,8 @@ export class ChatManagerService {
         }
         return this.messageHistory.slice(index + 1);
     }
+
+    public getChatClients(): AbstractChatClient[] {
+        return this.chatClients;
+    }
 }

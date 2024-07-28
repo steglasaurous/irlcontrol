@@ -22,12 +22,17 @@ export class ChatComponent implements AfterViewChecked {
       this.chatMessages.push(chatMessage);
     });
 
+    // FIXME: Should probably move this to the websocket service. Should also rename the websocket service to something like 'irlcontrol-service'
+    //   as it's specific to this server, not a generic websocket.
     websocketService.onConnect$.subscribe((socket) => {
       socket.emit(
         'lastReceivedMessage',
         { id: this.chatMessages.length },
         (chatMessages: ChatMessage[]) => {
-          this.chatMessages = this.chatMessages.concat(chatMessages);
+          chatMessages.forEach((chatMessage) => {
+            chatMessage.emotes = new Map<string, string[]>(chatMessage.emotes);
+            this.chatMessages.push(chatMessage);
+          });
         },
       );
     });
@@ -44,5 +49,9 @@ export class ChatComponent implements AfterViewChecked {
       }
       this.lastDisplayedMessage = this.chatMessages.length;
     }
+  }
+
+  sendMessage(message: string) {
+    this.websocketService.sendMessage(message);
   }
 }

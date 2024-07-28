@@ -85,4 +85,13 @@ export class MainGateway implements OnGatewayConnection {
         };
         this.server.emit('chatMessage', chatMessageOutput);
     }
+
+    @SubscribeMessage('sendMessage')
+    async sendMessage(@MessageBody('message') message: string) {
+        console.log('Sending message', message);
+        // FIXME: This lets anyone connecting to websocket send a twitch message as the authenticated user.
+        //   Need to secure this.
+        const chatClient = this.chatManager.getChatClients()[0];
+        await chatClient.sendMessage(chatClient.getDefaultChannel(), message);
+    }
 }
