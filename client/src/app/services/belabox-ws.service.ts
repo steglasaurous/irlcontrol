@@ -14,7 +14,7 @@ export class BelaboxWsService {
   private url = 'wss://belabox.local'; // FIXME: Should move this to environment
   private belaboxPassword = environment.belaboxPassword;
 
-  private ws!: WebSocket;
+  private ws?: WebSocket;
 
   private isActivated: boolean = false;
 
@@ -35,65 +35,92 @@ export class BelaboxWsService {
 
   connect() {
     this.isActivated = true;
+    this.getNewWebsocket();
+  }
 
-    this.ws = new WebSocket(this.url);
-    this.ws.addEventListener('open', () => {
-      console.log('Connection opened to belabox - authenticating...');
+  onOpen() {
+    console.log('Connection opened to belabox - authenticating...');
+    if (this.ws instanceof WebSocket) {
       this.ws.send(
         JSON.stringify({
           auth: { password: this.belaboxPassword, persistent_token: false },
         }),
       );
       this.keepaliveIntervalHandle = setInterval(() => {
-        this.ws.send(JSON.stringify({ keepalive: null }));
+        if (this.ws instanceof WebSocket) {
+          this.ws.send(JSON.stringify({ keepalive: null }));
+        }
       }, 10000);
-    });
-    this.ws.addEventListener('message', (wsMessage) => {
-      const messageObj = JSON.parse(wsMessage.data.toString());
-      if (messageObj.hasOwnProperty('netif')) {
-        for (const property in messageObj.netif) {
-          const ip = messageObj.netif[property].ip;
-          const tp = Math.round(
-            (parseInt(messageObj.netif[property].tp) * 8) / 1024,
-          );
+    }
+  }
 
-          // Construct a streamStatus object for this.
-          this.interfaceStatuses.set(property, {
-            connected: true,
+  onMessage(wsMessage: MessageEvent<any>) {
+    const messageObj = JSON.parse(wsMessage.data.toString());
+    if (messageObj.hasOwnProperty('netif')) {
+      for (const property in messageObj.netif) {
+        const ip = messageObj.netif[property].ip;
+        const tp = Math.round(
+          (parseInt(messageObj.netif[property].tp) * 8) / 1024,
+        );
+
+        // Construct a streamStatus object for this.
+        this.interfaceStatuses.set(property, {
+          connected: true,
+          rtt: undefined,
+          bitrate: tp,
+          streamName: ip,
+          timestamp: Date.now(),
+          streamSourceType: 'belabox-local',
+        } as StreamStatus);
+      }
+      // Go through connectedInterfaces to see if any are missing.  Remove and log the ones that are.
+      this.interfaceStatuses.forEach((interfaceStatus, ifname) => {
+        if (!messageObj.netif.hasOwnProperty(ifname)) {
+          this.interfaceStatuses.set(ifname, {
+            connected: false,
             rtt: undefined,
-            bitrate: tp,
-            streamName: ip,
+            bitrate: 0,
+            streamName: interfaceStatus.streamName,
             timestamp: Date.now(),
             streamSourceType: 'belabox-local',
           } as StreamStatus);
+          console.log(ifname + ' is down');
         }
-        // Go through connectedInterfaces to see if any are missing.  Remove and log the ones that are.
-        this.interfaceStatuses.forEach((interfaceStatus, ifname) => {
-          if (!messageObj.netif.hasOwnProperty(ifname)) {
-            this.interfaceStatuses.set(ifname, {
-              connected: false,
-              rtt: undefined,
-              bitrate: 0,
-              streamName: interfaceStatus.streamName,
-              timestamp: Date.now(),
-              streamSourceType: 'belabox-local',
-            } as StreamStatus);
-            console.log(ifname + ' is down');
-          }
-        });
+      });
 
-        // Emit all statuses
-        this.interfaceStatuses.forEach((interfaceStatus) => {
-          this.streamStatusSubject.next(interfaceStatus);
-        });
-      }
-    });
+      // Emit all statuses
+      this.interfaceStatuses.forEach((interfaceStatus) => {
+        this.streamStatusSubject.next(interfaceStatus);
+      });
+    }
+  }
 
-    this.ws.addEventListener('error', (e) => {
-      console.log('belabox ws error', e);
-    });
-    this.ws.addEventListener('close', (e) => {
-      console.log('belabox connection closed', e);
-    });
+  onError(e: Event) {
+    console.log('Belabox ws error', e);
+  }
+
+  onClose(e: CloseEvent) {
+    console.log('Belabox ws connection closed.');
+    clearInterval(this.keepaliveIntervalHandle);
+
+    if (this.ws instanceof WebSocket) {
+      this.ws.removeEventListener('open', this.onOpen.bind(this));
+      this.ws.removeEventListener('message', this.onMessage.bind(this));
+      this.ws.removeEventListener('error', this.onError.bind(this));
+      this.ws.removeEventListener('close', this.onClose.bind(this));
+      delete this.ws;
+    }
+    setTimeout(() => {
+      this.getNewWebsocket();
+    }, 3000);
+  }
+
+  getNewWebsocket() {
+    console.log('Creating new belabox ws instance');
+    this.ws = new WebSocket(this.url);
+    this.ws.addEventListener('open', this.onOpen.bind(this));
+    this.ws.addEventListener('message', this.onMessage.bind(this));
+    this.ws.addEventListener('error', this.onError.bind(this));
+    this.ws.addEventListener('close', this.onClose.bind(this));
   }
 }
