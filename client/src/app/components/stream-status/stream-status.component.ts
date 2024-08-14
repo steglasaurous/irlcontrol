@@ -39,11 +39,11 @@ export class StreamStatusComponent implements OnInit {
   streamStableMinBitrate = 1000;
 
   streamStableSound: Howl = new Howl({
-    src: ['assets/sounds/blip.flac'],
+    src: ['assets/sounds/good.wav'],
   });
 
   streamUnstableSound: Howl = new Howl({
-    src: ['assets/sounds/warning.m4a'],
+    src: ['assets/sounds/bad.wav'],
   });
 
   streamStatusChange$: Subject<StreamState> = new Subject<StreamState>();
