@@ -1,5 +1,5 @@
+<div class="w-full absolute top-0 text-center bg-red-500 text-white font-bold z-10" *ngIf="websocketState == WebsocketState.Disconnected" >Disconnected, reconnecting...</div>
 <div class="flex w-full items-stretch">
-
   <div
     *ngFor="let streamStatus of getLatestStreamStatus()"
     class="grow"

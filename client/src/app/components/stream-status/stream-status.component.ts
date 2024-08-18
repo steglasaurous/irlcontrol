@@ -19,6 +19,11 @@ interface StreamStatus {
   rtt?: number;
 }
 
+enum WebsocketState {
+  Disconnected,
+  Connected,
+}
+
 @Component({
   selector: 'app-stream-status',
   templateUrl: './stream-status.component.html',
@@ -47,6 +52,9 @@ export class StreamStatusComponent implements OnInit {
   });
 
   streamStatusChange$: Subject<StreamState> = new Subject<StreamState>();
+  websocketState: WebsocketState = WebsocketState.Disconnected;
+
+  WebsocketState = WebsocketState;
 
   constructor(
     private websocketService: WebsocketService,
@@ -54,10 +62,20 @@ export class StreamStatusComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.setupWsStateChangeNotifier();
     this.setupStreamStatusReceiver();
     this.setupStreamStateChangeNotifier();
   }
 
+  setupWsStateChangeNotifier() {
+    this.websocketService.onConnect$.subscribe(() => {
+      this.websocketState = WebsocketState.Connected;
+    });
+
+    this.websocketService.onDisconnect$.subscribe(() => {
+      this.websocketState = WebsocketState.Disconnected;
+    });
+  }
   setupStreamStateChangeNotifier() {
     console.log(this.playNotifications);
 
@@ -147,7 +165,7 @@ export class StreamStatusComponent implements OnInit {
     // Get current stream state so we can compare, whether or not to emit a state change.
     const lastStreamStateResult = this.getLatestStreamStatus(
       newStreamStatus.streamName,
-    ); // Could be empty?
+    );
     let lastStreamState: StreamStatus | undefined = undefined;
     if (lastStreamStateResult.length > 0) {
       lastStreamState = lastStreamStateResult.slice(-1)[0];
@@ -167,8 +185,12 @@ export class StreamStatusComponent implements OnInit {
       }
     }
 
-    // Check for state change.
-    if (lastStreamState != undefined) {
+    // Check for state change. We ignore belabox-local stream sources since those bounce around a lot normally.
+    // Generally we care to notify on the general stream health.
+    if (
+      lastStreamState != undefined &&
+      newStreamStatus.streamSourceType != 'belabox-local'
+    ) {
       if (lastStreamState.connected != newStreamStatus.connected) {
         if (!newStreamStatus.connected) {
           this.streamStatusChange$.next(StreamState.Disconnected);

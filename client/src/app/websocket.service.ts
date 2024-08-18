@@ -19,6 +19,7 @@ export class WebsocketService {
 
   // Fired when  a connection is made (or re-connection)
   onConnect$ = new Subject<Socket>();
+  onDisconnect$ = new Subject<string>();
 
   constructor() {
     this.socket = io(environment.wsUrl);
@@ -41,6 +42,12 @@ export class WebsocketService {
 
     this.socket.on('config', (config: ConfigMessage) => {
       this.config$.next(config);
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('Disconnected', reason);
+      // Emit this in some form so components can do things like show a message, make a noise, etc.
+      this.onDisconnect$.next(reason);
     });
   }
 
