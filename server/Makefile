@@ -13,7 +13,7 @@ build-dev: node_modules config.json ${SRCS}
 	npx nest build
 
 config.json: config.json.dist
-	npx envsub --env-file=.env config.json.dist config.json
+	npx envsub --env-file=../.env config.json.dist config.json
 
 dist/node_modules: node_modules package.json package-lock.json
 ifeq ($(OS),Windows_NT)
