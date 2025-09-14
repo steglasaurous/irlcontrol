@@ -4,9 +4,10 @@ import { StreamStatusModule } from '../stream-status/stream-status.module';
 import { ChatModule } from '../chat/chat.module';
 import { IrlStatsModule } from '../irl-stats/irl-stats.module';
 import { ConfigModule } from '@nestjs/config';
+import { PlainWebsocketService } from './plain-websocket/plain-websocket.service';
 
 @Module({
     imports: [StreamStatusModule, ChatModule, IrlStatsModule, ConfigModule],
-    providers: [MainGateway],
+    providers: [MainGateway, PlainWebsocketService],
 })
 export class WebsocketModule {}

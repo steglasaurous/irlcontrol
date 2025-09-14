@@ -14,6 +14,7 @@ import { IrlStatsService } from '../../irl-stats/services/irl-stats.service';
 import { ConfigService } from '@nestjs/config';
 import { ChatMessageReceiveEvent } from '../../chat/events/chat-message-receive.event';
 import { OnEvent } from '@nestjs/event-emitter';
+import { PlainWebsocketService } from '../plain-websocket/plain-websocket.service';
 @WebSocketGateway({ cors: '^*' })
 export class MainGateway implements OnGatewayConnection {
     @WebSocketServer()
@@ -23,6 +24,10 @@ export class MainGateway implements OnGatewayConnection {
         private chatManager: ChatManagerService,
         private irlStatsService: IrlStatsService,
         private configService: ConfigService,
+
+        // FIXME: Sticking this here for a quick way to instantiate the plain websocket service but this should be moved
+        // to a factory or something.
+        private plainWebsocketService: PlainWebsocketService,
     ) {
         streamStatusManager
             .getStreamChangeObservable()
