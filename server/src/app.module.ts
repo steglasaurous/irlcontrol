@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { WebsocketModule } from './modules/websocket/websocket.module';
 import { StreamStatusModule } from './modules/stream-status/stream-status.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -11,6 +10,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as fs from 'fs';
 import { join } from 'path';
+import {AppLauncherController} from "./app-launcher.controller";
 
 @Module({
     imports: [
@@ -29,6 +29,7 @@ import { join } from 'path';
                 : join(__dirname, 'public'),
         }),
     ],
-    providers: [AppService],
+    providers: [],
+    controllers: [AppLauncherController],
 })
 export class AppModule {}

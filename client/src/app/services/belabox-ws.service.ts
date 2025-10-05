@@ -11,7 +11,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class BelaboxWsService {
-  private url = 'wss://belabox.local'; // FIXME: Should move this to environment
+  private url = environment.belaboxWsUrl;
   private belaboxPassword = environment.belaboxPassword;
 
   private ws?: WebSocket;

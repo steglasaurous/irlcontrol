@@ -12,6 +12,7 @@ import { IrlStatsComponent } from './components/irl-stats/irl-stats.component';
 import { StatusOverlayComponent } from './containers/status-overlay/status-overlay.component';
 import { VideoPreviewComponent } from './components/video-preview/video-preview.component';
 import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
+import {StatusBarComponent} from "./components/status-bar/status-bar.component";
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
     IrlStatsComponent,
     StatusOverlayComponent,
     VideoPreviewComponent,
+    StatusBarComponent
   ],
   imports: [BrowserModule, AppRoutingModule, CanvasJSAngularChartsModule],
   providers: [],

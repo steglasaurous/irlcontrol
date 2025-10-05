@@ -2,7 +2,9 @@ export const environment = {
   production: true,
   wsUrl: '', // If blank, assume the origin of where the app was loaded from.
   belaboxPassword: '${BELABOX_PASSWORD}', // Belabox password to login to the belabox websocket server. Optional.
-  videoFeedbackSource: '',// FIXME: Should load this from the server.
+  belaboxWsUrl: 'wss://belabox.local',
+  videoFeedbackSource: '', // FIXME: Should load this from the server.
+  moblinAssistantWsUrl: '', // If available, tries to connect to my custom moblin assistant relay
   // rtirlPullKey: '',
   // twitchUsername: 'steglasaurous'
 };

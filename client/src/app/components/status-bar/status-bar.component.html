@@ -1,0 +1,26 @@
+<style>
+  .iconbox {
+    width: 50px;
+    text-align: center;
+    color: white;
+  }
+
+  .good {
+    background-color: green;
+
+  }
+
+  .bad {
+    background-color: red;
+
+  }
+
+  .container {
+    display: flex;
+  }
+</style>
+<div class="container">
+  <div class="iconbox"
+       [ngClass]="{'good': moblinState.mic === correctMicDevice, 'bad': moblinState.mic !== correctMicDevice }"><span
+    class="material-symbols-outlined">mic</span></div>
+</div>
