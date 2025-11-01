@@ -1,0 +1,8 @@
+export const environment = {
+  production: true,
+  wsUrl: '', // If blank, assume the origin of where the app was loaded from.
+  belaboxPassword: '${BELABOX_PASSWORD}', // Belabox password to login to the belabox websocket server. Optional.
+  videoFeedbackSource: '',// FIXME: Should load this from the server.
+  // rtirlPullKey: '',
+  // twitchUsername: 'steglasaurous'
+};

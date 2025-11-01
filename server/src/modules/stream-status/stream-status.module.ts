@@ -8,6 +8,7 @@ import { RtmpStreamStatusClient } from './clients/rtmp-stream-status.client';
 import { IrlStatsModule } from '../irl-stats/irl-stats.module';
 import { IrlStatsService } from '../irl-stats/services/irl-stats.service';
 import { BelaboxStreamStatusClient } from './clients/belabox-stream-status.client';
+import { DummyStreamStatusClient } from './clients/dummy-stream-status.client';
 
 @Module({
     imports: [HttpModule, ConfigModule, IrlStatsModule],
@@ -56,6 +57,11 @@ import { BelaboxStreamStatusClient } from './clients/belabox-stream-status.clien
                                         streamSource.url,
                                         streamSource.name,
                                     ),
+                                );
+                                break;
+                            case StreamSourceType.dummy:
+                                manager.addStreamStatusClient(
+                                    new DummyStreamStatusClient(),
                                 );
                                 break;
                             default:

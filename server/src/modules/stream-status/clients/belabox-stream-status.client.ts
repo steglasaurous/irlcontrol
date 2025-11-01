@@ -2,6 +2,7 @@ import { AbstractStreamStatusClient } from './abstract-stream-status.client';
 import { Injectable, Logger } from '@nestjs/common';
 import { StreamStatus } from '../models/stream-status';
 import { HttpService } from '@nestjs/axios';
+import { StreamSourceType } from '../../../configuration';
 
 @Injectable()
 export class BelaboxStreamStatusClient extends AbstractStreamStatusClient {
@@ -10,6 +11,7 @@ export class BelaboxStreamStatusClient extends AbstractStreamStatusClient {
         0,
         false,
         Date.now(),
+        StreamSourceType.belabox,
         undefined,
     );
     private logger: Logger = new Logger(BelaboxStreamStatusClient.name);
@@ -36,6 +38,7 @@ export class BelaboxStreamStatusClient extends AbstractStreamStatusClient {
                             obj.publishers[this.key].bitrate ?? 0,
                             obj.publishers[this.key].connected,
                             Date.now(),
+                            StreamSourceType.belabox,
                             obj.publishers[this.key].rtt ?? -1,
                         );
                     } else {
@@ -44,6 +47,7 @@ export class BelaboxStreamStatusClient extends AbstractStreamStatusClient {
                             0,
                             false,
                             Date.now(),
+                            StreamSourceType.belabox,
                             -1,
                         );
                     }

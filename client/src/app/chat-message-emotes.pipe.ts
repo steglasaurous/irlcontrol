@@ -1,11 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {ChatMessage} from "./utils/chat-message.interface";
+import { ChatMessage } from './utils/chat-message.interface';
 
 @Pipe({
-  name: 'chatMessageEmotes'
+  name: 'chatMessageEmotes',
 })
 export class ChatMessageEmotesPipe implements PipeTransform {
-
   transform(value: ChatMessage, ...args: unknown[]): string {
     let outputMessage: string = value.message;
 
@@ -41,11 +40,16 @@ export class ChatMessageEmotesPipe implements PipeTransform {
 
       // Get beginning of string up to part that's to be replaced, then replace, then get the remaining string.
       outputMessage =
-        outputMessage.substring(0,(parseInt(emoteOffsetsParsed[0]) + additionalOffset))
-        + `<img alt="${emoteData[1]}" src="${emoteImageUrl}">`
-        + outputMessage.substring((parseInt(emoteOffsetsParsed[1]) + 1 + additionalOffset));
+        outputMessage.substring(
+          0,
+          parseInt(emoteOffsetsParsed[0]) + additionalOffset,
+        ) +
+        `<img alt="${emoteData[1]}" src="${emoteImageUrl}">` +
+        outputMessage.substring(
+          parseInt(emoteOffsetsParsed[1]) + 1 + additionalOffset,
+        );
 
-      additionalOffset += (outputMessage.length - currentMessageLength);
+      additionalOffset += outputMessage.length - currentMessageLength;
     }
 
     return outputMessage;

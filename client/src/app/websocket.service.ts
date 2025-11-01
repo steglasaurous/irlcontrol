@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
-import {io, Socket} from "socket.io-client";
+import { io, Socket } from 'socket.io-client';
 import { environment } from '../environments/environment';
-import {Subject} from "rxjs";
-import {StreamStatus} from "./utils/stream-status.interface";
-import {ChatMessage} from "./utils/chat-message.interface";
-import {ConfigMessage} from "./utils/config-message.interface";
+import { Subject } from 'rxjs';
+import { StreamStatus } from './utils/stream-status.interface';
+import { ChatMessage } from './utils/chat-message.interface';
+import { ConfigMessage } from './utils/config-message.interface';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WebsocketService {
   socket!: Socket;
-
 
   streamStatusSubject = new Subject<StreamStatus>();
   streamStatus$ = this.streamStatusSubject.asObservable();
@@ -20,6 +19,7 @@ export class WebsocketService {
 
   // Fired when  a connection is made (or re-connection)
   onConnect$ = new Subject<Socket>();
+  onDisconnect$ = new Subject<string>();
 
   constructor() {
     this.socket = io(environment.wsUrl);
@@ -43,5 +43,16 @@ export class WebsocketService {
     this.socket.on('config', (config: ConfigMessage) => {
       this.config$.next(config);
     });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('Disconnected', reason);
+      // Emit this in some form so components can do things like show a message, make a noise, etc.
+      this.onDisconnect$.next(reason);
+    });
+  }
+
+  sendMessage(message: string) {
+    console.log('sendMessage: ', message);
+    this.socket.emit('sendMessage', { message: message });
   }
 }

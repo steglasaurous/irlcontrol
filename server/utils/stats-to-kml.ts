@@ -1,4 +1,21 @@
 import * as fs from 'fs';
+import * as readline from 'readline';
+
+interface LatLong {
+  lat: number;
+  long: number;
+}
+
+enum ConnectionState {
+  Good = 'good',
+  Low = 'low',
+  Offline = 'offline'
+}
+
+interface CoordinateGroup {
+  connectionState: ConnectionState,
+  coordinates: LatLong[]
+}
 
 
 // Establish styles for:
@@ -7,148 +24,162 @@ import * as fs from 'fs';
 // Offline = connected = false
 const inputFilePath = process.argv[2];
 if (!inputFilePath) {
-    console.log('Specify an input file');
-    process.exit();
+  console.log('Specify an input file');
+  process.exit();
 }
 
-interface LatLong {
-    lat: number;
-    long: number;
-}
+parseLocationFile(inputFilePath).then((parsedData) => {
+  // Render to kml
+  parsedData.forEach((coordinateGroups, groupDate) => {
+    fs.writeFileSync(groupDate + '.kml', toKml(coordinateGroups));
+  });
+});
 
-enum ConnectionState {
-    Good = 'good',
-    Low = 'low',
-    Offline = 'offline'
-}
+function parseLocationFile(inputFilePath: string): Promise<Map<string, CoordinateGroup[]>> {
+  return new Promise<Map<string, CoordinateGroup[]>>((resolve, reject) => {
+    const output = new Map<string, CoordinateGroup[]>();
 
-interface CoordinateGroup {
-    connectionState: ConnectionState,
-    coordinates: LatLong[]
-}
-
-// const template = {
-//     type: 'good', // good, low, offline
-//     coordinates: [
-//         {
-//             lat: 123,
-//             long: 123,
-//         }
-//     ]
-// }
-
-const parsedData: CoordinateGroup[] = [];
-
-const inputFile = fs.readFileSync(inputFilePath).toString().split("\n");
-
-// For simplicity, we're only paying attention to the 'Main' stream.
-let lastLatLong: LatLong = {
-    lat: 0,
-    long: 0
-};
-
-
-for (const line of inputFile) {
-    if (!line) {
-        continue;
-    }
-    const parsedLine = JSON.parse(line);
-    if (parsedLine.irlStat.latitude == lastLatLong.lat && parsedLine.irlStat.longitude == lastLatLong.long) {
-        continue;
-    }
-
-    const streamStatus = parsedLine.streamStatuses[0];
-    let connectionStatus = ConnectionState.Good;
-
-    if (streamStatus.connected == false) {
+    const inputFile = readline.createInterface({
+      input: fs.createReadStream(inputFilePath),
+    });
+    
+    
+    // For simplicity, we're only paying attention to the 'Main' stream.
+    let lastLatLong: LatLong = {
+      lat: 0,
+      long: 0
+    };
+    
+    inputFile.on('line', (line) => {
+      if (!line) {
+        return;
+      }
+      let parsedLine;
+    
+      try {
+        parsedLine = JSON.parse(line);
+      } catch (e) {
+        console.log(line, e.message);
+        return;
+        // process.exit(1);
+      }
+      
+      if (!parsedLine.irlStat) {
+        console.log('no irlstat');
+        return;
+      }
+    
+      if (parsedLine.irlStat.latitude == lastLatLong.lat && parsedLine.irlStat.longitude == lastLatLong.long) {
+        return;
+      }
+    
+      const streamStatus = parsedLine.streamStatuses[0];
+      let connectionStatus = ConnectionState.Good;
+    
+      if (streamStatus.connected == false) {
         connectionStatus = ConnectionState.Offline;
-    } else if (streamStatus.rtt > 1000) {
+      } else if (streamStatus.rtt > 1000) {
         connectionStatus = ConnectionState.Low;
-    }
+      }
 
-    if (parsedData.length < 1 || parsedData[parsedData.length - 1].connectionState != connectionStatus) {
-        parsedData.push({
-            connectionState: connectionStatus,
-            coordinates: []
+      const lineDate = new Date(parsedLine.streamStatuses[0].timestamp);
+      const formattedLineDate = lineDate.getFullYear() + '-' + lineDate.getMonth() + '-' + lineDate.getDate();
+    
+      if (output.has(formattedLineDate) && (output.get(formattedLineDate).length < 1 || output.get(formattedLineDate)[output.get(formattedLineDate).length - 1].connectionState != connectionStatus)) {
+        // Add this coordinate to the last one in the list of the previous group before starting a new one.
+        output.get(formattedLineDate)[output.get(formattedLineDate).length - 1].coordinates.push({ lat: parsedLine.irlStat.latitude, long: parsedLine.irlStat.longitude });
+        output.get(formattedLineDate).push({
+          connectionState: connectionStatus,
+          coordinates: []
         });
-    }
+      }
 
-    parsedData[parsedData.length - 1].coordinates.push({
+      if (!output.has(formattedLineDate)) {
+        output.set(formattedLineDate, [{
+          connectionState: connectionStatus,
+          coordinates: []
+        }]);
+      }
+
+      output.get(formattedLineDate)[output.get(formattedLineDate).length - 1].coordinates.push({
         lat: parsedLine.irlStat.latitude,
         long: parsedLine.irlStat.longitude
+      });
+      lastLatLong = { lat: parsedLine.irlStat.latitude, long: parsedLine.irlStat.longitude };
+    
     });
-    lastLatLong = { lat: parsedLine.irlStat.latitude, long: parsedLine.irlStat.longitude };
+    inputFile.on('close', () => {
+      resolve(output);
+    });
+  });
 }
 
-// Render to kml
-fs.writeFileSync('output.kml', toKml(parsedData));
-
 function toKml(coordinateGroups: CoordinateGroup[]) {
-    let output = [];
+  let output = [];
+  
+  for (let coordinateGroup of coordinateGroups) {
+    output.push(renderPlacemark(coordinateGroup));
+  }
 
-    for (let coordinateGroup of coordinateGroups) {
-        output.push(renderPlacemark(coordinateGroup));
-    }
-
-    return getKmlTemplate().replace('{{PLACEMARKS}}', output.join('\n'));
+  return getKmlTemplate().replace('{{PLACEMARKS}}', output.join('\n'));
 }
 
 function renderPlacemark(coordinateGroup: CoordinateGroup) {
-    let coordinateList: string[] = [];
-    for (let coordinate of coordinateGroup.coordinates) {
-        coordinateList.push(`${coordinate.long}, ${coordinate.lat},0`);
-    }
+  let coordinateList: string[] = [];
+  for (let coordinate of coordinateGroup.coordinates) {
+    coordinateList.push(`${coordinate.long}, ${coordinate.lat},0`);
+  }
 
-    return '    <Placemark>\n' +
-        '      <name>' + coordinateGroup.connectionState + '</name>\n' +
-        '      <description></description>\n' +
-        '      <styleUrl>#' + coordinateGroup.connectionState + '</styleUrl>\n' +
-        '      <LineString>\n' +
-        '        <extrude>1</extrude>\n' +
-        '        <tessellate>1</tessellate>\n' +
-        '        <altitudeMode>absolute</altitudeMode>\n' +
-        '        <coordinates> \n' +
-        coordinateList.join(',\n') +
-        '        </coordinates>\n' +
-        '      </LineString>\n' +
-        '    </Placemark>\n';
+  return '    <Placemark>\n' +
+    '      <name>' + coordinateGroup.connectionState + '</name>\n' +
+    '      <description></description>\n' +
+    '      <styleUrl>#' + coordinateGroup.connectionState + '</styleUrl>\n' +
+    '      <LineString>\n' +
+    '        <extrude>1</extrude>\n' +
+    '        <tessellate>1</tessellate>\n' +
+    '        <altitudeMode>absolute</altitudeMode>\n' +
+    '        <coordinates> \n' +
+    coordinateList.join(',\n') +
+    '        </coordinates>\n' +
+    '      </LineString>\n' +
+    '    </Placemark>\n';
 }
 
 function getKmlTemplate() {
-    return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-        '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
-        '  <Document>\n' +
-        '    <name>Paths</name>\n' +
-        '    <Style id="low">\n' +
-        '      <LineStyle>\n' +
-        '        <color>ffff00ff</color>\n' +
-        '        <width>4</width>\n' +
-        '      </LineStyle>\n' +
-        '      <PolyStyle>\n' +
-        '        <color>ffff00ff</color>\n' +
-        '      </PolyStyle>\n' +
-        '    </Style>\n' +
-        '    <Style id="good">\n' +
-        '      <LineStyle>\n' +
-        '        <color>00ff00ff</color>\n' +
-        '        <width>4</width>\n' +
-        '      </LineStyle>\n' +
-        '      <PolyStyle>\n' +
-        '        <color>00ff00ff</color>\n' +
-        '      </PolyStyle>\n' +
-        '    </Style>\n' +
-        '    <Style id="offline">\n' +
-        '      <LineStyle>\n' +
-        '        <color>ff0000ff</color>\n' +
-        '        <width>4</width>\n' +
-        '      </LineStyle>\n' +
-        '      <PolyStyle>\n' +
-        '        <color>ff000000</color>\n' +
-        '      </PolyStyle>\n' +
-        '    </Style>\n' +
-        '    {{PLACEMARKS}}\n' +
-        '  </Document>\n' +
-        '</kml>'
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<kml xmlns="http://www.opengis.net/kml/2.2">\n' +
+    '  <Document>\n' +
+    '    <name>Paths</name>\n' +
+    '    <Style id="low">\n' +
+    '      <LineStyle>\n' +
+    '        <color>ff0000ff</color>\n' +
+    '        <width>4</width>\n' +
+    '      </LineStyle>\n' +
+    '      <PolyStyle>\n' +
+    '        <color>ff0000ff</color>\n' +
+    '      </PolyStyle>\n' +
+    '    </Style>\n' +
+    '    <Style id="good">\n' +
+    '      <LineStyle>\n' +
+    '        <color>ff00ff00</color>\n' +
+    '        <width>4</width>\n' +
+    '      </LineStyle>\n' +
+    '      <PolyStyle>\n' +
+    '        <color>ff00ff00</color>\n' +
+    '      </PolyStyle>\n' +
+    '    </Style>\n' +
+    '    <Style id="offline">\n' +
+    '      <LineStyle>\n' +
+    '        <color>ff000000</color>\n' +
+    '        <width>4</width>\n' +
+    '      </LineStyle>\n' +
+    '      <PolyStyle>\n' +
+    '        <color>ff000000</color>\n' +
+    '      </PolyStyle>\n' +
+    '    </Style>\n' +
+    '    {{PLACEMARKS}}\n' +
+    '  </Document>\n' +
+    '</kml>'
 }
 /*
 <?xml version="1.0" encoding="UTF-8"?>

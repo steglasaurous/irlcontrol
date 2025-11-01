@@ -28,6 +28,7 @@ describe('SlsStreamStatusClient', () => {
             httpService,
             'http://10.0.0.234:8181/stats',
             'Main',
+            'testkey',
         );
     });
 

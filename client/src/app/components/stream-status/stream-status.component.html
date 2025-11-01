@@ -1,0 +1,19 @@
+<div class="w-full absolute top-0 text-center bg-red-500 text-white font-bold z-10" *ngIf="websocketState == WebsocketState.Disconnected" >Disconnected, reconnecting...</div>
+<div class="flex w-full items-stretch">
+  <div
+    *ngFor="let streamStatus of getLatestStreamStatus()"
+    class="grow"
+    >
+    <div class="border-black border">
+      <app-stream-bitrate-chart [streamStatusHistory]="streamStatusHistory" [streamName]="streamStatus.streamName"></app-stream-bitrate-chart>
+      <div class="absolute top-0 flex flex-row w-full items-end gap-4 h-[60px] text-center bg-transparent" [ngClass]="{
+    connected: getStreamState(streamStatus.streamName) == streamStateType.Stable,
+    disconnected: getStreamState(streamStatus.streamName) == streamStateType.Disconnected,
+    badConnection: getStreamState(streamStatus.streamName) == streamStateType.Unstable }">
+        <div class="text-white text-xs font-bold pl-1">{{ streamStatus.streamName }}</div>
+        <div class="text-white">{{ streamStatus.bitrate }} kbps</div>
+        <div class="text-white" *ngIf="streamStatus.rtt != null">{{ streamStatus.rtt }} ms</div>
+      </div>
+    </div>
+  </div>
+</div>

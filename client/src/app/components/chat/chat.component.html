@@ -1,0 +1,12 @@
+<div class="flex flex-col h-full">
+  <div class="m-2 text-2xl overflow-auto h-5/6" #chatContainer>
+    <div class="mt-2 mb-2 leading-6" *ngFor="let chatMessage of chatMessages">
+      <div class="font-bold mb-2" style="color: {{ chatMessage.color }}">{{ chatMessage.username }}</div>
+      <div class="bg-gray-200 p-2" [innerHTML]="chatMessage | chatMessageEmotes"></div>
+    </div>
+  </div>
+  <div class="w-full h-1/6">
+    <input type="text" name="chatInput" class="border-2 w-11/12 text-3xl" #chatInput />
+    <button type="button" class="border-2 w-1/12 text-3xl" (click)="sendMessage(chatInput.value); chatInput.value = ''; chatInput.focus();">&gt;</button>
+  </div>
+</div>

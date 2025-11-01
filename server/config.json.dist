@@ -1,16 +1,10 @@
 {
     "streamSources": [
         {
-            "type": "sls",
-            "name": "Main",
-            "url": "http://sls:8181/stats",
-            "key": "publish/live/feed1"
-        },
-        {
-            "type": "sls",
-            "name": "Face",
-            "url": "http://sls:8181/stats",
-            "key": "publish/live/feed2"
+          "type": "belabox",
+          "name": "bbox",
+          "url": "${BELABOX_STATS_URL}",
+          "key": "${BELABOX_INGEST_KEY}"
         }
     ],
     "chat": {

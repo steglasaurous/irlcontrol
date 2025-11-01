@@ -14,6 +14,7 @@ import { IrlStatsService } from '../../irl-stats/services/irl-stats.service';
 import { ConfigService } from '@nestjs/config';
 import { ChatMessageReceiveEvent } from '../../chat/events/chat-message-receive.event';
 import { OnEvent } from '@nestjs/event-emitter';
+import { PlainWebsocketService } from '../plain-websocket/plain-websocket.service';
 @WebSocketGateway({ cors: '^*' })
 export class MainGateway implements OnGatewayConnection {
     @WebSocketServer()
@@ -23,6 +24,10 @@ export class MainGateway implements OnGatewayConnection {
         private chatManager: ChatManagerService,
         private irlStatsService: IrlStatsService,
         private configService: ConfigService,
+
+        // FIXME: Sticking this here for a quick way to instantiate the plain websocket service but this should be moved
+        // to a factory or something.
+        private plainWebsocketService: PlainWebsocketService,
     ) {
         streamStatusManager
             .getStreamChangeObservable()
@@ -84,5 +89,14 @@ export class MainGateway implements OnGatewayConnection {
             emotes: emoteArray,
         };
         this.server.emit('chatMessage', chatMessageOutput);
+    }
+
+    @SubscribeMessage('sendMessage')
+    async sendMessage(@MessageBody('message') message: string) {
+        console.log('Sending message', message);
+        // FIXME: This lets anyone connecting to websocket send a twitch message as the authenticated user.
+        //   Need to secure this.
+        const chatClient = this.chatManager.getChatClients()[0];
+        await chatClient.sendMessage(chatClient.getDefaultChannel(), message);
     }
 }

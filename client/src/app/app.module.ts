@@ -3,13 +3,15 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { MainComponent } from './main/main.component';
-import { StreamStatusComponent } from './stream-status/stream-status.component';
-import { ChatComponent } from './chat/chat.component';
+import { MainComponent } from './containers/main/main.component';
+import { StreamStatusComponent } from './components/stream-status/stream-status.component';
+import { ChatComponent } from './components/chat/chat.component';
 import { ChatMessageEmotesPipe } from './chat-message-emotes.pipe';
-import { NgChartsModule } from 'ng2-charts';
-import { StreamBitrateChartComponent } from './stream-bitrate-chart/stream-bitrate-chart.component';
-import { IrlStatsComponent } from './irl-stats/irl-stats.component';
+import { StreamBitrateChartComponent } from './components/stream-bitrate-chart/stream-bitrate-chart.component';
+import { IrlStatsComponent } from './components/irl-stats/irl-stats.component';
+import { StatusOverlayComponent } from './containers/status-overlay/status-overlay.component';
+import { VideoPreviewComponent } from './components/video-preview/video-preview.component';
+import { CanvasJSAngularChartsModule } from '@canvasjs/angular-charts';
 
 @NgModule({
   declarations: [
@@ -20,13 +22,11 @@ import { IrlStatsComponent } from './irl-stats/irl-stats.component';
     ChatMessageEmotesPipe,
     StreamBitrateChartComponent,
     IrlStatsComponent,
+    StatusOverlayComponent,
+    VideoPreviewComponent,
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    NgChartsModule
-  ],
+  imports: [BrowserModule, AppRoutingModule, CanvasJSAngularChartsModule],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
